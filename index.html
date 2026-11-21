@@ -1,0 +1,2160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Family Income</title>
+
+    <!-- Built-in Mobile App Icon & Full-Screen Home Screen Settings -->
+    <link rel="manifest" href="manifest.webmanifest">
+    <link rel="icon" href="favicon.ico" sizes="any">
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="favicon-16.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Family Income">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#0f172a">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif']
+                    }
+                }
+            }
+        };
+    </script>
+    <style>
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        button { cursor: pointer; touch-action: manipulation; }
+        button:active { transform: scale(0.985); }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-900 font-sans antialiased min-h-screen pb-24 sm:pb-12">
+
+    <!-- ===================================================================== -->
+    <!-- TOP STICKY HEADER                                                     -->
+    <!-- ===================================================================== -->
+    <header class="bg-slate-900 text-white sticky top-0 z-30 shadow-sm border-b border-slate-800">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between gap-2.5">
+            <div class="flex items-center gap-2.5 min-w-0">
+                <div class="w-10 h-10 rounded-2xl bg-emerald-500/20 border border-emerald-400/30 flex items-center justify-center text-emerald-400 shrink-0 font-extrabold text-lg">
+                    $
+                </div>
+                <div class="min-w-0">
+                    <div class="flex items-center gap-2 flex-wrap">
+                        <h1 class="text-base sm:text-lg font-extrabold tracking-tight leading-tight">Family Income</h1>
+                        <span id="headerSaveStatusBadge" class="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-400/30 text-[10px] sm:text-[11px] font-extrabold">
+                            All Saved ✓
+                        </span>
+                    </div>
+                    <p id="headerTodaySubtext" class="text-[11px] sm:text-xs text-slate-400 font-medium truncate">5-Member Tracker • Locked Backup Active</p>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-2 shrink-0">
+                <button type="button" id="headerMasterSaveBtn" data-action="master-save-all"
+                    class="px-3 sm:px-3.5 py-2.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 text-xs font-extrabold shadow-sm transition">
+                    Save All Data
+                </button>
+                <button type="button" data-action="open-daily-entry-today"
+                    class="px-3 sm:px-3.5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs font-extrabold shadow-sm transition">
+                    + Log Entry
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- ===================================================================== -->
+    <!-- MAIN WORKSPACE                                                        -->
+    <!-- ===================================================================== -->
+    <main class="max-w-4xl mx-auto px-4 sm:px-6 pt-5 space-y-5">
+
+        <!-- 3 CLEAN NAVIGATION TABS -->
+        <nav aria-label="Main Navigation" class="grid grid-cols-3 bg-slate-200/80 p-1.5 rounded-2xl gap-1">
+            <button type="button" id="navTabHome" data-action="switch-tab" data-tab="home"
+                class="px-3 py-2.5 rounded-xl text-xs sm:text-sm font-extrabold bg-white text-slate-900 shadow-sm transition">
+                Home
+            </button>
+            <button type="button" id="navTabEntry" data-action="switch-tab" data-tab="entry"
+                class="px-3 py-2.5 rounded-xl text-xs sm:text-sm font-bold text-slate-600 hover:text-slate-900 transition">
+                Daily Entry
+            </button>
+            <button type="button" id="navTabHistory" data-action="switch-tab" data-tab="history"
+                class="px-3 py-2.5 rounded-xl text-xs sm:text-sm font-bold text-slate-600 hover:text-slate-900 transition">
+                History & Reports
+            </button>
+        </nav>
+
+        <!-- UNSAVED CHANGES WARNING BANNER -->
+        <div id="unsavedPromptBanner" class="hidden bg-amber-50 border-2 border-amber-400 rounded-2xl p-4 shadow-md space-y-3">
+            <div class="flex items-start gap-2.5">
+                <span class="w-7 h-7 rounded-xl bg-amber-500 text-slate-950 font-extrabold text-sm flex items-center justify-center shrink-0">!</span>
+                <div>
+                    <h3 class="text-sm font-extrabold text-amber-950">You haven't saved your Daily Entry changes yet</h3>
+                    <p class="text-xs text-amber-900 mt-0.5">Save your pending numbers before leaving this screen so nothing is lost.</p>
+                </div>
+            </div>
+            <div class="flex flex-wrap items-center gap-2">
+                <button type="button" data-action="unsaved-save-and-proceed"
+                    class="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-extrabold">
+                    Save & Continue
+                </button>
+                <button type="button" data-action="unsaved-discard-and-proceed"
+                    class="px-3.5 py-2 rounded-xl bg-white hover:bg-rose-50 text-rose-700 border border-rose-200 text-xs font-extrabold">
+                    Discard Changes
+                </button>
+                <button type="button" data-action="unsaved-cancel"
+                    class="px-3.5 py-2 rounded-xl bg-slate-200 hover:bg-slate-300 text-slate-800 text-xs font-extrabold">
+                    Stay Here
+                </button>
+            </div>
+        </div>
+
+        <!-- ===================================================================== -->
+        <!-- TAB 1: HOME SCREEN (DAILY + MON-SUN WEEKLY + ALL 5 MEMBERS EXPANDABLE)-->
+        <!-- ===================================================================== -->
+        <section id="viewTabHome" class="space-y-5">
+
+            <!-- Selected Period Card -->
+            <div class="bg-white rounded-2xl p-5 sm:p-6 border border-slate-200 shadow-sm space-y-4">
+
+                <!-- Segmented Toggle: Daily View vs This Week (Mon–Sun) -->
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4">
+                    <div class="grid grid-cols-2 bg-slate-100 p-1 rounded-xl gap-1 w-full sm:w-auto">
+                        <button type="button" id="btnHomeModeDaily" data-action="set-home-mode" data-mode="daily"
+                            class="px-4 py-2 rounded-lg text-xs font-extrabold bg-slate-900 text-white shadow-sm transition">
+                            Daily View
+                        </button>
+                        <button type="button" id="btnHomeModeWeekly" data-action="set-home-mode" data-mode="weekly"
+                            class="px-4 py-2 rounded-lg text-xs font-bold text-slate-600 hover:text-slate-900 transition">
+                            This Week (Mon–Sun)
+                        </button>
+                    </div>
+
+                    <div class="flex items-center gap-2 flex-wrap">
+                        <button type="button" data-action="copy-home-summary"
+                            class="px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-900 text-xs font-extrabold transition">
+                            Copy Summary
+                        </button>
+                        <button type="button" data-action="whatsapp-home-summary"
+                            class="px-3.5 py-2 rounded-xl bg-[#25D366] hover:bg-[#20bd5a] text-slate-950 text-xs font-extrabold transition">
+                            WhatsApp
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Period Header + Locked Single-Row Date Bar + Jump to Today Underneath -->
+                <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-slate-100 pb-4">
+                    <div class="space-y-2.5 min-w-0">
+                        <div class="flex items-center gap-2 flex-wrap">
+                            <span id="homeActiveDateLabel" class="text-base sm:text-lg font-extrabold text-slate-900">
+                                Friday, Nov 20, 2026 • Today
+                            </span>
+                            <span id="homeDayStatusPill" class="px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-900 border border-amber-200 text-xs font-extrabold">
+                                In Progress
+                            </span>
+                        </div>
+
+                        <!-- Fixed Single-Row Navigation Controls (Never Wraps) -->
+                        <div class="inline-flex flex-col items-stretch gap-2 w-full sm:w-auto">
+                            <div class="flex flex-nowrap items-center gap-1.5 w-full sm:w-auto">
+                                <button type="button" id="homePrevBtn" data-action="shift-home-period" data-dir="-1" aria-label="Previous"
+                                    class="px-3 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-xs font-extrabold text-slate-800 whitespace-nowrap shrink-0">
+                                    ◀ Prev
+                                </button>
+                                <input type="date" id="homeDatePicker" data-role="date-picker"
+                                    class="flex-1 sm:w-44 min-w-0 px-3 py-2 rounded-xl border border-slate-300 bg-slate-50 text-xs sm:text-sm font-extrabold text-slate-900 text-center">
+                                <button type="button" id="homeNextBtn" data-action="shift-home-period" data-dir="1" aria-label="Next"
+                                    class="px-3 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-xs font-extrabold text-slate-800 whitespace-nowrap shrink-0">
+                                    Next ▶
+                                </button>
+                            </div>
+
+                            <!-- Jump to Today / Current Week Centered Cleanly Below -->
+                            <div id="homeJumpTodayRow" class="hidden flex justify-center">
+                                <button type="button" id="homeJumpTodayBtn" data-action="set-date" data-date="TODAY"
+                                    class="w-full sm:w-auto px-4 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-extrabold shadow-sm transition">
+                                    Jump to Today
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Period Grand Total & Edit Button -->
+                    <div class="flex items-center justify-between lg:justify-end gap-4 bg-slate-50 lg:bg-transparent p-3.5 lg:p-0 rounded-xl border lg:border-0 border-slate-200 shrink-0">
+                        <div class="lg:text-right">
+                            <span id="homePeriodTotalLabel" class="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">Selected Day Total</span>
+                            <span id="homeSelectedDayGrandTotal" class="text-2xl sm:text-3xl font-extrabold text-emerald-600">$0.00</span>
+                        </div>
+                        <button type="button" data-action="open-daily-entry-selected"
+                            class="px-4 py-3 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs sm:text-sm font-extrabold shadow-sm transition shrink-0">
+                            Edit / Log Day →
+                        </button>
+                    </div>
+                </div>
+
+                <!-- All 5 Members Expandable Breakdown -->
+                <div class="space-y-3">
+                    <div class="flex items-center justify-between gap-2 flex-wrap">
+                        <div>
+                            <h2 id="homeBreakdownHeading" class="text-xs font-extrabold uppercase tracking-wider text-slate-500">
+                                All 5 Family Members (Tap Member to Expand Streams)
+                            </h2>
+                            <span id="homeScheduledHintText" class="text-[11px] font-semibold text-slate-500 block mt-0.5"></span>
+                        </div>
+                        <button type="button" id="btnToggleExpandAll" data-action="toggle-expand-all-members"
+                            class="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-extrabold">
+                            Expand All
+                        </button>
+                    </div>
+                    <div id="homeSelectedDayMemberList" class="space-y-2.5"></div>
+                </div>
+            </div>
+
+            <!-- Current Month Overview Card -->
+            <div class="bg-slate-900 text-white rounded-2xl p-5 sm:p-6 border border-slate-800 shadow-sm space-y-4">
+                <div class="flex flex-wrap items-center justify-between gap-3 border-b border-white/10 pb-4">
+                    <div>
+                        <span class="text-[11px] font-extrabold uppercase tracking-wider text-emerald-400 block">
+                            Current Month Overview (<span id="homeMonthLabel">2026-11</span>)
+                        </span>
+                        <h2 class="text-sm sm:text-base font-bold text-slate-300 mt-0.5">Month-to-Date Grand Total (All 5 Members)</h2>
+                    </div>
+                    <div class="text-left sm:text-right">
+                        <span id="homeMonthGrandTotal" class="text-2xl sm:text-3xl font-extrabold text-emerald-400">$0.00</span>
+                    </div>
+                </div>
+
+                <div id="homeMonthFiveMembersGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5"></div>
+            </div>
+
+            <!-- Recent Days List -->
+            <div class="bg-white rounded-2xl p-5 sm:p-6 border border-slate-200 shadow-sm space-y-3">
+                <div class="flex items-center justify-between gap-2 flex-wrap">
+                    <div>
+                        <h3 class="text-sm sm:text-base font-extrabold text-slate-900">Recent Days</h3>
+                        <p class="text-xs text-slate-500">Tap any day to open and view or edit its entries in Daily Entry.</p>
+                    </div>
+                    <button type="button" id="homeResetBtn" data-action="reset-all-two-tap"
+                        class="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-rose-50 text-slate-600 hover:text-rose-700 text-xs font-extrabold transition">
+                        Reset to Seed Data
+                    </button>
+                </div>
+                <div id="homeRecentDaysList" class="divide-y divide-slate-100"></div>
+            </div>
+        </section>
+
+        <!-- ===================================================================== -->
+        <!-- TAB 2: DAILY ENTRY                                                    -->
+        <!-- ===================================================================== -->
+        <section id="viewTabEntry" class="hidden space-y-5">
+
+            <!-- Date Navigation & Schedule Bar -->
+            <div class="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200 shadow-sm space-y-3.5">
+                <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-3.5">
+                    <div class="flex items-start sm:items-center gap-2.5">
+                        <button type="button" data-action="switch-tab" data-tab="home"
+                            class="px-3 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-extrabold shrink-0">
+                            ← Home
+                        </button>
+                        <div>
+                            <div class="flex items-center gap-2 flex-wrap">
+                                <h2 class="text-base font-extrabold text-slate-900">Daily Entry</h2>
+                                <span id="entryDayBadge" class="px-2.5 py-0.5 rounded-full bg-indigo-50 text-indigo-900 border border-indigo-200 text-xs font-extrabold">
+                                    Friday, Nov 20, 2026 • Today
+                                </span>
+                                <span id="entryCompletedBadge" class="hidden px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300 text-[11px] font-extrabold">
+                                    Completed ✓
+                                </span>
+                            </div>
+                            <p class="text-xs text-slate-500 mt-0.5">Saving overwrites that day's stream entry • Top "Save All Data" button saves everything from anywhere</p>
+                        </div>
+                    </div>
+
+                    <!-- Fixed Single-Row Date Bar + Jump to Today Below -->
+                    <div class="inline-flex flex-col items-stretch gap-2 w-full sm:w-auto">
+                        <div class="flex flex-nowrap items-center gap-1.5 w-full sm:w-auto">
+                            <button type="button" data-action="shift-date" data-days="-1" aria-label="Previous Day"
+                                class="px-3 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-xs font-extrabold text-slate-800 whitespace-nowrap shrink-0">
+                                ◀ Prev
+                            </button>
+                            <input type="date" id="entryDatePicker" data-role="date-picker"
+                                class="flex-1 sm:w-44 min-w-0 px-3 py-2 rounded-xl border border-slate-300 bg-white text-xs sm:text-sm font-extrabold text-slate-900 text-center">
+                            <button type="button" data-action="shift-date" data-days="1" aria-label="Next Day"
+                                class="px-3 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-xs font-extrabold text-slate-800 whitespace-nowrap shrink-0">
+                                Next ▶
+                            </button>
+                        </div>
+                        <div id="entryJumpTodayRow" class="hidden flex justify-center">
+                            <button type="button" id="entryJumpTodayBtn" data-action="set-date" data-date="TODAY"
+                                class="w-full sm:w-auto px-4 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-extrabold shadow-sm transition">
+                                Jump to Today
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Schedule Summary + Optional Override Checkbox -->
+                <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 flex flex-wrap items-center justify-between gap-2 text-xs">
+                    <span id="entryScheduleSummaryText" class="font-bold text-slate-700">Active schedule rules applied.</span>
+                    <label class="inline-flex items-center gap-2 cursor-pointer select-none bg-white px-3 py-1.5 rounded-xl border border-slate-300 font-extrabold text-slate-800">
+                        <input type="checkbox" id="toggleOffSchedulePaydays" data-role="off-schedule-toggle" class="rounded text-emerald-600">
+                        <span>Show off-schedule paydays</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- 1. ADITYA -->
+            <div class="bg-white rounded-2xl p-5 border-2 border-emerald-200 shadow-sm space-y-4">
+                <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                    <div class="flex items-center gap-2.5">
+                        <span class="w-8 h-8 rounded-xl bg-emerald-600 text-white font-extrabold text-sm flex items-center justify-center shrink-0">1</span>
+                        <div>
+                            <h3 class="text-base font-extrabold text-slate-900">Aditya</h3>
+                            <p class="text-xs text-slate-500">BC Liquor (Daily Shift & Bi-Weekly Pay) • Uber • Lyft • Instacart • LED Lights Sales • Envision</p>
+                        </div>
+                    </div>
+                    <span id="adityaHeaderPill" class="px-3 py-1 rounded-full bg-emerald-50 text-emerald-900 border border-emerald-200 text-xs font-extrabold shrink-0">$0.00</span>
+                </div>
+
+                <!-- 1A. Aditya BC Liquor • Daily Shift Hours -->
+                <div class="p-3.5 rounded-2xl bg-amber-50/80 border border-amber-200 space-y-3">
+                    <div class="flex items-center justify-between flex-wrap gap-2">
+                        <div class="flex items-center gap-2 flex-wrap">
+                            <span class="text-xs sm:text-sm font-extrabold text-amber-950">BC Liquor • Daily Shift Hours</span>
+                            <span id="pill-Aditya-BCL-Shift" class="px-2.5 py-0.5 rounded-full bg-white border border-amber-200 text-[11px] font-bold text-slate-500">
+                                Not Logged
+                            </span>
+                        </div>
+                        <span id="readout-Aditya-BCL-Shift" class="text-xs font-extrabold text-amber-950 bg-white px-2.5 py-1 rounded-lg border border-amber-200">
+                            0 hrs × $26.00 = $0.00
+                        </span>
+                    </div>
+
+                    <div class="grid grid-cols-12 gap-2 items-end">
+                        <div class="col-span-4 sm:col-span-3">
+                            <label for="input-Aditya-bcl-hours" class="block text-[11px] font-bold text-amber-950 mb-1">Hours</label>
+                            <input type="number" id="input-Aditya-bcl-hours" data-role="bcl-calc" data-member="Aditya" step="0.25" min="0" max="24" value="0"
+                                class="w-full px-2.5 py-2 rounded-xl border border-amber-300 bg-white text-sm font-extrabold text-slate-900">
+                        </div>
+                        <div class="col-span-4 sm:col-span-4">
+                            <label for="input-Aditya-bcl-rate" class="block text-[11px] font-bold text-amber-950 mb-1">Rate ($/hr)</label>
+                            <div class="relative">
+                                <span class="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 font-extrabold text-xs">$</span>
+                                <input type="number" id="input-Aditya-bcl-rate" data-role="bcl-calc" data-member="Aditya" step="0.25" min="0.01" value="26"
+                                    class="w-full pl-6 pr-2 py-2 rounded-xl border border-amber-300 bg-white text-sm font-extrabold text-slate-900">
+                            </div>
+                        </div>
+                        <div class="col-span-4 sm:col-span-5 flex items-center justify-end">
+                            <button type="button" data-action="save-bcl-shift" data-member="Aditya"
+                                class="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-extrabold">
+                                Save
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 1B. Aditya BC Liquor • Bi-Weekly Pay -->
+                <div id="adityaBclBiWeeklyRow" class="hidden p-3.5 rounded-xl bg-amber-50/50 border border-amber-200 flex flex-wrap items-center justify-between gap-2">
+                    <div class="flex items-center gap-2 flex-wrap">
+                        <span class="text-xs sm:text-sm font-extrabold text-amber-950">BC Liquor • Bi-Weekly Pay</span>
+                        <span id="pill-Aditya-BCL-BiWeekly" class="px-2.5 py-0.5 rounded-full bg-white border border-amber-200 text-[11px] font-bold text-slate-500">
+                            Not Logged
+                        </span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <div class="relative w-28 sm:w-32">
+                            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-extrabold text-xs">$</span>
+                            <input type="number" id="input-Aditya-bcl-biweekly" data-role="dollar-input" step="0.01" min="0" value="0"
+                                class="w-full pl-6 pr-2.5 py-2 rounded-xl border border-amber-300 bg-white text-sm font-extrabold text-slate-900">
+                        </div>
+                        <button type="button" data-action="save-dollar-stream" data-member="Aditya" data-stream="BC Liquor • Bi-Weekly Pay" data-input="input-Aditya-bcl-biweekly"
+                            class="px-4 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-extrabold">
+                            Save
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 1C. Aditya Daily Dollar Streams -->
+                <div id="adityaDollarStreamsContainer" class="space-y-2.5"></div>
+
+                <!-- Aditya Card Footer Total -->
+                <div class="p-3.5 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center justify-between">
+                    <span class="text-xs sm:text-sm font-extrabold text-emerald-950">Aditya's Day Total:</span>
+                    <span id="adityaDayTotalDisplay" class="text-base sm:text-lg font-extrabold text-emerald-700">$0.00</span>
+                </div>
+            </div>
+
+            <!-- 2. NEHA -->
+            <div class="bg-white rounded-2xl p-5 border-2 border-indigo-200 shadow-sm space-y-4">
+                <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                    <div class="flex items-center gap-2.5">
+                        <span class="w-8 h-8 rounded-xl bg-indigo-600 text-white font-extrabold text-sm flex items-center justify-center shrink-0">2</span>
+                        <div>
+                            <h3 class="text-base font-extrabold text-slate-900">Neha</h3>
+                            <p class="text-xs text-slate-500">BC Liquor (Daily Shift & Bi-Weekly Pay) • Monthly Salary (30th)</p>
+                        </div>
+                    </div>
+                    <span id="nehaHeaderPill" class="px-3 py-1 rounded-full bg-indigo-50 text-indigo-900 border border-indigo-200 text-xs font-extrabold shrink-0">$0.00</span>
+                </div>
+
+                <!-- 2A. Neha BC Liquor • Daily Shift Hours -->
+                <div class="p-3.5 rounded-2xl bg-amber-50/80 border border-amber-200 space-y-3">
+                    <div class="flex items-center justify-between flex-wrap gap-2">
+                        <div class="flex items-center gap-2 flex-wrap">
+                            <span class="text-xs sm:text-sm font-extrabold text-amber-950">BC Liquor • Daily Shift Hours</span>
+                            <span id="pill-Neha-BCL-Shift" class="px-2.5 py-0.5 rounded-full bg-white border border-amber-200 text-[11px] font-bold text-slate-500">
+                                Not Logged
+                            </span>
+                        </div>
+                        <span id="readout-Neha-BCL-Shift" class="text-xs font-extrabold text-amber-950 bg-white px-2.5 py-1 rounded-lg border border-amber-200">
+                            0 hrs × $26.00 = $0.00
+                        </span>
+                    </div>
+
+                    <div class="grid grid-cols-12 gap-2 items-end">
+                        <div class="col-span-4 sm:col-span-3">
+                            <label for="input-Neha-bcl-hours" class="block text-[11px] font-bold text-amber-950 mb-1">Hours</label>
+                            <input type="number" id="input-Neha-bcl-hours" data-role="bcl-calc" data-member="Neha" step="0.25" min="0" max="24" value="0"
+                                class="w-full px-2.5 py-2 rounded-xl border border-amber-300 bg-white text-sm font-extrabold text-slate-900">
+                        </div>
+                        <div class="col-span-4 sm:col-span-4">
+                            <label for="input-Neha-bcl-rate" class="block text-[11px] font-bold text-amber-950 mb-1">Rate ($/hr)</label>
+                            <div class="relative">
+                                <span class="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 font-extrabold text-xs">$</span>
+                                <input type="number" id="input-Neha-bcl-rate" data-role="bcl-calc" data-member="Neha" step="0.25" min="0.01" value="26"
+                                    class="w-full pl-6 pr-2 py-2 rounded-xl border border-amber-300 bg-white text-sm font-extrabold text-slate-900">
+                            </div>
+                        </div>
+                        <div class="col-span-4 sm:col-span-5 flex items-center justify-end">
+                            <button type="button" data-action="save-bcl-shift" data-member="Neha"
+                                class="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-extrabold">
+                                Save
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2B. Neha BC Liquor • Bi-Weekly Pay -->
+                <div id="nehaBclBiWeeklyRow" class="hidden p-3.5 rounded-xl bg-amber-50/50 border border-amber-200 flex flex-wrap items-center justify-between gap-2">
+                    <div class="flex items-center gap-2 flex-wrap">
+                        <span class="text-xs sm:text-sm font-extrabold text-amber-950">BC Liquor • Bi-Weekly Pay</span>
+                        <span id="pill-Neha-BCL-BiWeekly" class="px-2.5 py-0.5 rounded-full bg-white border border-amber-200 text-[11px] font-bold text-slate-500">
+                            Not Logged
+                        </span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <div class="relative w-28 sm:w-32">
+                            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-extrabold text-xs">$</span>
+                            <input type="number" id="input-Neha-bcl-biweekly" data-role="dollar-input" step="0.01" min="0" value="0"
+                                class="w-full pl-6 pr-2.5 py-2 rounded-xl border border-amber-300 bg-white text-sm font-extrabold text-slate-900">
+                        </div>
+                        <button type="button" data-action="save-dollar-stream" data-member="Neha" data-stream="BC Liquor • Bi-Weekly Pay" data-input="input-Neha-bcl-biweekly"
+                            class="px-4 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-extrabold">
+                            Save
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 2C. Neha Monthly Salary -->
+                <div id="nehaMonthlySalaryRow" class="hidden p-3.5 rounded-xl bg-indigo-50/60 border border-indigo-200 flex flex-wrap items-center justify-between gap-2">
+                    <div class="flex items-center gap-2 flex-wrap">
+                        <span class="text-xs sm:text-sm font-extrabold text-slate-900">Monthly Salary</span>
+                        <span id="pill-Neha-Monthly" class="px-2.5 py-0.5 rounded-full bg-white border border-indigo-200 text-[11px] font-bold text-slate-500">
+                            Not Logged
+                        </span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <div class="relative w-28 sm:w-32">
+                            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-extrabold text-xs">$</span>
+                            <input type="number" id="input-Neha-monthly" data-role="dollar-input" step="0.01" min="0" value="0"
+                                class="w-full pl-6 pr-2.5 py-2 rounded-xl border border-indigo-300 bg-white text-sm font-extrabold text-slate-900">
+                        </div>
+                        <button type="button" data-action="save-dollar-stream" data-member="Neha" data-stream="Monthly Salary" data-input="input-Neha-monthly"
+                            class="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-extrabold">
+                            Save
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Neha Card Footer Total -->
+                <div class="p-3.5 rounded-xl bg-indigo-50 border border-indigo-200 flex items-center justify-between">
+                    <span class="text-xs sm:text-sm font-extrabold text-indigo-950">Neha's Day Total:</span>
+                    <span id="nehaDayTotalDisplay" class="text-base sm:text-lg font-extrabold text-indigo-700">$0.00</span>
+                </div>
+            </div>
+
+            <!-- 3. NAMIT -->
+            <div id="cardMemberNamit" class="hidden bg-white rounded-2xl p-5 border border-sky-200 shadow-sm space-y-3.5">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-2.5">
+                        <span class="w-8 h-8 rounded-xl bg-sky-600 text-white font-extrabold text-sm flex items-center justify-center shrink-0">3</span>
+                        <div>
+                            <h3 class="text-base font-extrabold text-slate-900">Namit</h3>
+                            <p class="text-xs text-slate-500">Scheduled Every Thursday • Weekly Income ($150/wk)</p>
+                        </div>
+                    </div>
+                    <span class="px-2.5 py-0.5 rounded-full bg-sky-100 text-sky-900 text-[11px] font-extrabold">Thursday Pay</span>
+                </div>
+
+                <div class="p-3.5 rounded-xl bg-sky-50/60 border border-sky-200 flex flex-wrap items-center justify-between gap-2.5">
+                    <div class="flex items-center gap-2 flex-wrap">
+                        <span class="text-xs sm:text-sm font-extrabold text-slate-900">Weekly Income</span>
+                        <span id="pill-Namit-Weekly" class="px-2.5 py-0.5 rounded-full bg-white border border-sky-200 text-[11px] font-bold text-slate-500">
+                            Not Logged
+                        </span>
+                        <button type="button" data-action="quick-fill" data-input="input-Namit-weekly" data-val="150"
+                            class="px-2.5 py-1 rounded-lg bg-sky-100 hover:bg-sky-200 text-sky-950 text-[11px] font-extrabold">
+                            $150
+                        </button>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <div class="relative w-28 sm:w-32">
+                            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-extrabold text-xs">$</span>
+                            <input type="number" id="input-Namit-weekly" data-role="dollar-input" step="0.01" min="0" value="0"
+                                class="w-full pl-6 pr-2.5 py-2 rounded-xl border border-sky-300 bg-white text-sm font-extrabold text-slate-900">
+                        </div>
+                        <button type="button" data-action="save-dollar-stream" data-member="Namit" data-stream="Weekly Income" data-input="input-Namit-weekly"
+                            class="px-4 py-2 rounded-xl bg-sky-600 hover:bg-sky-700 text-white text-xs font-extrabold">
+                            Save
+                        </button>
+                    </div>
+                </div>
+
+                <div class="p-3 rounded-xl bg-sky-50/80 border border-sky-200 flex items-center justify-between">
+                    <span class="text-xs sm:text-sm font-extrabold text-sky-950">Namit's Day Total:</span>
+                    <span id="namitDayTotalDisplay" class="text-base font-extrabold text-sky-800">$0.00</span>
+                </div>
+            </div>
+
+            <!-- 4. SHANAYA -->
+            <div id="cardMemberShanaya" class="hidden bg-white rounded-2xl p-5 border border-amber-200 shadow-sm space-y-3.5">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-2.5">
+                        <span class="w-8 h-8 rounded-xl bg-amber-600 text-white font-extrabold text-sm flex items-center justify-center shrink-0">4</span>
+                        <div>
+                            <h3 class="text-base font-extrabold text-slate-900">Shanaya</h3>
+                            <p class="text-xs text-slate-500">Scheduled on the 30th • Child Care Benefit ($600/mo)</p>
+                        </div>
+                    </div>
+                    <span class="px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-900 text-[11px] font-extrabold">30th Payday</span>
+                </div>
+
+                <div class="p-3.5 rounded-xl bg-amber-50/60 border border-amber-200 flex flex-wrap items-center justify-between gap-2.5">
+                    <div class="flex items-center gap-2 flex-wrap">
+                        <span class="text-xs sm:text-sm font-extrabold text-slate-900">Child Care Benefit</span>
+                        <span id="pill-Shanaya-CCB" class="px-2.5 py-0.5 rounded-full bg-white border border-amber-200 text-[11px] font-bold text-slate-500">
+                            Not Logged
+                        </span>
+                        <button type="button" data-action="quick-fill" data-input="input-Shanaya-ccb" data-val="600"
+                            class="px-2.5 py-1 rounded-lg bg-amber-100 hover:bg-amber-200 text-amber-950 text-[11px] font-extrabold">
+                            $600
+                        </button>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <div class="relative w-28 sm:w-32">
+                            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-extrabold text-xs">$</span>
+                            <input type="number" id="input-Shanaya-ccb" data-role="dollar-input" step="0.01" min="0" value="0"
+                                class="w-full pl-6 pr-2.5 py-2 rounded-xl border border-amber-300 bg-white text-sm font-extrabold text-slate-900">
+                        </div>
+                        <button type="button" data-action="save-dollar-stream" data-member="Shanaya" data-stream="Child Care Benefit" data-input="input-Shanaya-ccb"
+                            class="px-4 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-extrabold">
+                            Save
+                        </button>
+                    </div>
+                </div>
+
+                <div class="p-3 rounded-xl bg-amber-50/80 border border-amber-200 flex items-center justify-between">
+                    <span class="text-xs sm:text-sm font-extrabold text-amber-950">Shanaya's Day Total:</span>
+                    <span id="shanayaDayTotalDisplay" class="text-base font-extrabold text-amber-800">$0.00</span>
+                </div>
+            </div>
+
+            <!-- 5. S.K. SURENDRA KATYAL -->
+            <div id="cardMemberSK" class="hidden bg-white rounded-2xl p-5 border border-teal-200 shadow-sm space-y-3.5">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-2.5">
+                        <span class="w-8 h-8 rounded-xl bg-teal-600 text-white font-extrabold text-sm flex items-center justify-center shrink-0">5</span>
+                        <div>
+                            <h3 class="text-base font-extrabold text-slate-900">S.K. Surendra Katyal</h3>
+                            <p class="text-xs text-slate-500">Scheduled on the 30th • Monthly Income ($400/mo)</p>
+                        </div>
+                    </div>
+                    <span class="px-2.5 py-0.5 rounded-full bg-teal-100 text-teal-900 text-[11px] font-extrabold">30th Payday</span>
+                </div>
+
+                <div class="p-3.5 rounded-xl bg-teal-50/60 border border-teal-200 flex flex-wrap items-center justify-between gap-2.5">
+                    <div class="flex items-center gap-2 flex-wrap">
+                        <span class="text-xs sm:text-sm font-extrabold text-slate-900">Monthly Income</span>
+                        <span id="pill-SK-Monthly" class="px-2.5 py-0.5 rounded-full bg-white border border-teal-200 text-[11px] font-bold text-slate-500">
+                            Not Logged
+                        </span>
+                        <button type="button" data-action="quick-fill" data-input="input-SK-monthly" data-val="400"
+                            class="px-2.5 py-1 rounded-lg bg-teal-100 hover:bg-teal-200 text-teal-950 text-[11px] font-extrabold">
+                            $400
+                        </button>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <div class="relative w-28 sm:w-32">
+                            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-extrabold text-xs">$</span>
+                            <input type="number" id="input-SK-monthly" data-role="dollar-input" step="0.01" min="0" value="0"
+                                class="w-full pl-6 pr-2.5 py-2 rounded-xl border border-teal-300 bg-white text-sm font-extrabold text-slate-900">
+                        </div>
+                        <button type="button" data-action="save-dollar-stream" data-member="S.K. Surendra Katyal" data-stream="Monthly Income" data-input="input-SK-monthly"
+                            class="px-4 py-2 rounded-xl bg-teal-600 hover:bg-teal-700 text-white text-xs font-extrabold">
+                            Save
+                        </button>
+                    </div>
+                </div>
+
+                <div class="p-3 rounded-xl bg-teal-50/80 border border-teal-200 flex items-center justify-between">
+                    <span class="text-xs sm:text-sm font-extrabold text-teal-950">S.K. Surendra Katyal's Day Total:</span>
+                    <span id="skDayTotalDisplay" class="text-base font-extrabold text-teal-800">$0.00</span>
+                </div>
+            </div>
+
+            <!-- BOTTOM GRAND TOTAL SUMMARY BAR & SAVE & MARK DAY COMPLETED -->
+            <div class="bg-slate-900 text-white rounded-2xl p-5 sm:p-6 border border-slate-800 shadow-lg space-y-4">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/10 pb-4">
+                    <div>
+                        <span class="text-xs font-extrabold uppercase tracking-wider text-emerald-400 block">Daily Entry Summary</span>
+                        <h3 class="text-base sm:text-lg font-extrabold text-white mt-0.5">
+                            Grand Total (All 5 Members) — <span id="entryFooterDateLabel" class="text-emerald-400">Friday, Nov 20, 2026</span>
+                        </h3>
+                    </div>
+                    <div class="bg-white/5 px-4 py-2.5 rounded-2xl border border-white/10 text-left sm:text-right">
+                        <span class="text-[11px] font-bold text-slate-300 block">Grand Total</span>
+                        <span id="entryGrandTotalDisplay" class="text-2xl sm:text-3xl font-extrabold text-emerald-400">$0.00</span>
+                    </div>
+                </div>
+
+                <div id="entryFooterMemberBreakdown" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2.5"></div>
+
+                <div class="pt-1 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+                    <p class="text-xs text-slate-300">
+                        Saves all currently visible streams (including $0 entries), marks the day <strong>Completed ✓</strong>, and returns to Home.
+                    </p>
+                    <button type="button" data-action="save-and-complete-day"
+                        class="px-6 py-4 rounded-2xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-sm font-extrabold shadow-md transition shrink-0">
+                        ✓ Save & Mark Day Completed
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===================================================================== -->
+        <!-- TAB 3: HISTORY & REPORTS                                              -->
+        <!-- ===================================================================== -->
+        <section id="viewTabHistory" class="hidden bg-white rounded-2xl p-5 sm:p-6 border border-slate-200 shadow-sm space-y-5">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div>
+                    <h2 class="text-base sm:text-lg font-extrabold text-slate-900">History & Reports</h2>
+                    <p class="text-xs text-slate-500">Filter by Month and Member • Edit in Daily Entry, Delete safely (two-tap), Export CSV, or Share on WhatsApp.</p>
+                </div>
+
+                <div class="flex items-center gap-2 flex-wrap">
+                    <button type="button" data-action="sync-lyft-seed"
+                        class="px-3.5 py-2.5 rounded-xl bg-fuchsia-50 hover:bg-fuchsia-100 text-fuchsia-900 border border-fuchsia-200 text-xs font-extrabold shadow-sm">
+                        Sync / Restore All Data
+                    </button>
+                    <button type="button" data-action="export-csv"
+                        class="px-3.5 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-extrabold shadow-sm">
+                        Export CSV
+                    </button>
+                    <button type="button" data-action="share-whatsapp"
+                        class="px-3.5 py-2.5 rounded-xl bg-[#25D366] hover:bg-[#20bd5a] text-slate-950 text-xs font-extrabold shadow-sm">
+                        WhatsApp Share
+                    </button>
+                </div>
+            </div>
+
+            <!-- Month & Member Filter Controls -->
+            <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div class="flex items-center gap-2">
+                    <label for="historyMonthFilter" class="text-xs font-extrabold text-slate-700 shrink-0">Month:</label>
+                    <input type="month" id="historyMonthFilter" data-role="history-filter"
+                        class="w-full px-3 py-2 rounded-xl border border-slate-300 bg-white text-xs sm:text-sm font-bold text-slate-900">
+                </div>
+                <div class="flex items-center gap-2">
+                    <label for="historyMemberFilter" class="text-xs font-extrabold text-slate-700 shrink-0">Member:</label>
+                    <select id="historyMemberFilter" data-role="history-filter"
+                        class="w-full px-3 py-2 rounded-xl border border-slate-300 bg-white text-xs sm:text-sm font-bold text-slate-900">
+                        <option value="All">All 5 Family Members</option>
+                        <option value="Aditya">1. Aditya</option>
+                        <option value="Neha">2. Neha</option>
+                        <option value="Namit">3. Namit</option>
+                        <option value="Shanaya">4. Shanaya</option>
+                        <option value="S.K. Surendra Katyal">5. S.K. Surendra Katyal</option>
+                    </select>
+                </div>
+            </div>
+
+            <div id="historyEntriesContainer" class="space-y-4"></div>
+        </section>
+    </main>
+
+    <!-- ===================================================================== -->
+    <!-- TOAST NOTIFICATION                                                    -->
+    <!-- ===================================================================== -->
+    <div id="toastBanner" class="hidden fixed bottom-6 right-4 left-4 sm:left-auto sm:w-96 z-50 bg-slate-900 text-white px-4 py-3.5 rounded-2xl shadow-xl border border-slate-700 flex items-center justify-between">
+        <span id="toastMessage" class="text-xs sm:text-sm font-bold text-emerald-300">Saved!</span>
+        <button type="button" data-action="hide-toast" class="text-slate-400 hover:text-white ml-2 text-xs font-extrabold">✕</button>
+    </div>
+
+    <!-- ===================================================================== -->
+    <!-- APPLICATION LOGIC                                                     -->
+    <!-- ===================================================================== -->
+    <script>
+        (function () {
+            'use strict';
+
+            const STORAGE_KEY = 'family_income_tracker_v5';
+            const BACKUP_STORAGE_KEY = 'family_income_tracker_v5_locked_backup';
+            const BCL_ANCHOR_UTC_MS = Date.UTC(2026, 10, 13);
+            const MS_PER_DAY = 24 * 60 * 60 * 1000;
+
+            const FAMILY_MEMBERS = [
+                {
+                    order: 1,
+                    name: 'Aditya',
+                    shortName: 'Aditya',
+                    badgeBg: 'bg-emerald-600',
+                    streams: [
+                        'BC Liquor • Daily Shift Hours',
+                        'BC Liquor • Bi-Weekly Pay',
+                        'Uber',
+                        'Lyft',
+                        'Instacart',
+                        'LED Lights Sales',
+                        'Envision'
+                    ]
+                },
+                {
+                    order: 2,
+                    name: 'Neha',
+                    shortName: 'Neha',
+                    badgeBg: 'bg-indigo-600',
+                    streams: [
+                        'BC Liquor • Daily Shift Hours',
+                        'BC Liquor • Bi-Weekly Pay',
+                        'Monthly Salary'
+                    ]
+                },
+                {
+                    order: 3,
+                    name: 'Namit',
+                    shortName: 'Namit',
+                    badgeBg: 'bg-sky-600',
+                    streams: ['Weekly Income']
+                },
+                {
+                    order: 4,
+                    name: 'Shanaya',
+                    shortName: 'Shanaya',
+                    badgeBg: 'bg-amber-600',
+                    streams: ['Child Care Benefit']
+                },
+                {
+                    order: 5,
+                    name: 'S.K. Surendra Katyal',
+                    shortName: 'S.K. Katyal',
+                    badgeBg: 'bg-teal-600',
+                    streams: ['Monthly Income']
+                }
+            ];
+
+            const ADITYA_DAILY_STREAMS = [
+                { stream: 'Uber', inputId: 'input-Aditya-Uber', pillId: 'pill-Aditya-Uber' },
+                { stream: 'Lyft', inputId: 'input-Aditya-Lyft', pillId: 'pill-Aditya-Lyft' },
+                { stream: 'Instacart', inputId: 'input-Aditya-Instacart', pillId: 'pill-Aditya-Instacart' },
+                { stream: 'LED Lights Sales', inputId: 'input-Aditya-LED', pillId: 'pill-Aditya-LED' },
+                { stream: 'Envision', inputId: 'input-Aditya-Envision', pillId: 'pill-Aditya-Envision' }
+            ];
+
+            const IMPORTED_LYFT_RECORDS = [
+                { date: '2026-11-01', member: 'Aditya', stream: 'Lyft', amount: 586.02, note: 'Weekly Summary Oct 26 – Nov 1, 2026 • 53 Rides' },
+                { date: '2026-11-08', member: 'Aditya', stream: 'Lyft', amount: 609.96, note: 'Weekly Summary Nov 2 – Nov 8, 2026 • 41 Rides' },
+                { date: '2026-11-15', member: 'Aditya', stream: 'Lyft', amount: 238.04, note: 'Weekly Summary Nov 9 – Nov 15, 2026 • 24 Rides' },
+                { date: '2026-11-16', member: 'Aditya', stream: 'Lyft', amount: 17.92, note: 'Daily Ride History • 1 Ride' },
+                { date: '2026-11-17', member: 'Aditya', stream: 'Lyft', amount: 14.22, note: 'Daily Ride History • 2 Rides' },
+                { date: '2026-11-18', member: 'Aditya', stream: 'Lyft', amount: 108.24, note: 'Daily Ride History • 1 Ride' },
+                { date: '2026-11-19', member: 'Aditya', stream: 'Lyft', amount: 77.74, note: 'Daily Ride History • 8 Rides' },
+                { date: '2026-11-20', member: 'Aditya', stream: 'Lyft', amount: 39.12, note: 'Daily Ride History • 3 Rides' }
+            ];
+
+            const IMPORTED_UBER_RECORDS = [
+                { date: '2026-10-27', member: 'Aditya', stream: 'Uber', amount: 88.32, note: 'Uber Statement Oct 26–Nov 2 • 10 trips + tips' },
+                { date: '2026-10-29', member: 'Aditya', stream: 'Uber', amount: 48.43, note: 'Uber Statement Oct 26–Nov 2 • 1 trip + guarantee' },
+                { date: '2026-10-30', member: 'Aditya', stream: 'Uber', amount: 41.66, note: 'Uber Statement Oct 26–Nov 2 • 4 trips + tip' },
+                { date: '2026-10-31', member: 'Aditya', stream: 'Uber', amount: 81.88, note: 'Uber Statement Oct 26–Nov 2 • 6 trips + tips' },
+                { date: '2026-11-01', member: 'Aditya', stream: 'Uber', amount: 5.59, note: 'Uber Statement Oct 26–Nov 2 • Prev-week tip' },
+                { date: '2026-11-02', member: 'Aditya', stream: 'Uber', amount: 9.54, note: 'Uber Statement Nov 2–Nov 9 • 1 trip' },
+                { date: '2026-11-03', member: 'Aditya', stream: 'Uber', amount: 24.23, note: 'Uber Statement Nov 2–Nov 9 • 2 trips' },
+                { date: '2026-11-04', member: 'Aditya', stream: 'Uber', amount: 4.21, note: 'Uber Statement Nov 2–Nov 9 • 1 trip' },
+                { date: '2026-11-05', member: 'Aditya', stream: 'Uber', amount: 27.05, note: 'Uber Statement Nov 2–Nov 9 • 2 trips + tip' },
+                { date: '2026-11-06', member: 'Aditya', stream: 'Uber', amount: 82.82, note: 'Uber Statement Nov 2–Nov 9 • 9 trips + tip' },
+                { date: '2026-11-07', member: 'Aditya', stream: 'Uber', amount: 93.33, note: 'Uber Statement Nov 2–Nov 9 • 4 trips' },
+                { date: '2026-11-08', member: 'Aditya', stream: 'Uber', amount: 52.66, note: 'Uber Statement Nov 2–Nov 9 • 5 trips + tip' },
+                { date: '2026-11-09', member: 'Aditya', stream: 'Uber', amount: 67.74, note: 'Uber Statement Nov 9–Nov 16 • 6 trips + tip' },
+                { date: '2026-11-10', member: 'Aditya', stream: 'Uber', amount: 177.97, note: 'Uber Statement Nov 9–Nov 16 • 20 trips' },
+                { date: '2026-11-11', member: 'Aditya', stream: 'Uber', amount: 112.86, note: 'Uber Statement Nov 9–Nov 16 • 12 trips + tip' },
+                { date: '2026-11-12', member: 'Aditya', stream: 'Uber', amount: 118.23, note: 'Uber Statement Nov 9–Nov 16 • 12 trips + guarantee' },
+                { date: '2026-11-13', member: 'Aditya', stream: 'Uber', amount: 268.10, note: 'Uber Statement Nov 9–Nov 16 • 22 trips + tips' },
+                { date: '2026-11-14', member: 'Aditya', stream: 'Uber', amount: 77.12, note: 'Uber Statement Nov 9–Nov 16 • 6 trips' },
+                { date: '2026-11-15', member: 'Aditya', stream: 'Uber', amount: 129.34, note: 'Uber Statement Nov 9–Nov 16 • 6 trips' },
+                { date: '2026-11-16', member: 'Aditya', stream: 'Uber', amount: 1.00, note: 'Uber Statement Nov 16–Nov 20 • Tip processed Nov 16' },
+                { date: '2026-11-17', member: 'Aditya', stream: 'Uber', amount: 16.22, note: 'Uber Statement Nov 16–Nov 20 • 2 trips' },
+                { date: '2026-11-18', member: 'Aditya', stream: 'Uber', amount: 21.64, note: 'Uber Statement Nov 16–Nov 20 • 3 trips' },
+                { date: '2026-11-19', member: 'Aditya', stream: 'Uber', amount: 153.36, note: 'Uber Statement Nov 16–Nov 20 • 12 trips' },
+                { date: '2026-11-20', member: 'Aditya', stream: 'Uber', amount: 174.04, note: 'Uber Statement Nov 16–Nov 20 • 6 trips + tip' }
+            ];
+
+            const IMPORTED_ADITYA_MANUAL_RECORDS = [
+                {
+                    date: '2026-11-16',
+                    member: 'Aditya',
+                    stream: 'BC Liquor • Daily Shift Hours',
+                    amount: 182.00,
+                    hours: 7,
+                    rate: 26,
+                    isHourly: true,
+                    note: 'BC Liquor • 7 hrs @ $26.00/hr'
+                },
+                {
+                    date: '2026-11-20',
+                    member: 'Aditya',
+                    stream: 'LED Lights Sales',
+                    amount: 230.00,
+                    isHourly: false,
+                    note: 'LED Lights Sales • $230.00'
+                }
+            ];
+
+            const NEHA_NOV_SHIFT_DATES = [
+                '2026-11-01', '2026-11-02', '2026-11-03', '2026-11-04',
+                '2026-11-06', '2026-11-07', '2026-11-10', '2026-11-11',
+                '2026-11-12', '2026-11-17', '2026-11-18', '2026-11-19', '2026-11-20'
+            ];
+
+            const IMPORTED_NEHA_RECORDS = NEHA_NOV_SHIFT_DATES.map(dateISO => ({
+                date: dateISO,
+                member: 'Neha',
+                stream: 'BC Liquor • Daily Shift Hours',
+                amount: 182.00,
+                hours: 7,
+                rate: 26,
+                isHourly: true,
+                note: 'BC Liquor • 7 hrs @ $26.00/hr'
+            }));
+
+            let appState = {
+                activeTab: 'home',
+                selectedDate: '',
+                homeMode: 'daily',
+                expandedMembers: {},
+                hasUnsavedEdits: false,
+                pendingActionAfterUnsaved: null,
+                rates: { Aditya: 26, Neha: 26 },
+                entries: {},
+                completedDates: {},
+                showOffSchedule: false,
+                pendingDeleteKey: null,
+                pendingResetConfirm: false
+            };
+
+            let toastTimeout = null;
+
+            function toLocalISO(d) {
+                const y = d.getFullYear();
+                const m = String(d.getMonth() + 1).padStart(2, '0');
+                const day = String(d.getDate()).padStart(2, '0');
+                return `${y}-${m}-${day}`;
+            }
+
+            function getTodayISO() {
+                return toLocalISO(new Date());
+            }
+
+            function getYesterdayISO() {
+                const d = new Date();
+                d.setDate(d.getDate() - 1);
+                return toLocalISO(d);
+            }
+
+            function parseLocalDate(isoStr) {
+                const parts = (isoStr || getTodayISO()).split('-').map(Number);
+                return new Date(parts[0], parts[1] - 1, parts[2]);
+            }
+
+            function shiftDateISO(isoStr, deltaDays) {
+                const d = parseLocalDate(isoStr);
+                d.setDate(d.getDate() + deltaDays);
+                return toLocalISO(d);
+            }
+
+            function getWeekBounds(isoStr) {
+                const d = parseLocalDate(isoStr);
+                const day = d.getDay();
+                const diffToMon = (day === 0 ? -6 : 1 - day);
+                const mon = new Date(d.getFullYear(), d.getMonth(), d.getDate() + diffToMon);
+                const sun = new Date(mon.getFullYear(), mon.getMonth(), mon.getDate() + 6);
+                const dates = [];
+                for (let i = 0; i < 7; i++) {
+                    dates.push(toLocalISO(new Date(mon.getFullYear(), mon.getMonth(), mon.getDate() + i)));
+                }
+                return { startISO: toLocalISO(mon), endISO: toLocalISO(sun), monDate: mon, sunDate: sun, dates };
+            }
+
+            function formatWeekRangeLabel(isoStr) {
+                const { monDate, sunDate } = getWeekBounds(isoStr);
+                const monFmt = monDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                const sunFmt = sunDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                return `Week: ${monFmt} – ${sunFmt} (Mon–Sun)`;
+            }
+
+            function formatDisplayDate(isoStr) {
+                const d = parseLocalDate(isoStr);
+                const base = d.toLocaleDateString('en-US', {
+                    weekday: 'long',
+                    month: 'short',
+                    day: 'numeric',
+                    year: 'numeric'
+                });
+                const todayISO = getTodayISO();
+                const yesterdayISO = getYesterdayISO();
+                if (isoStr === todayISO) return `${base} • Today`;
+                if (isoStr === yesterdayISO) return `${base} • Yesterday`;
+                return base;
+            }
+
+            function isBiWeeklyBclPayday(isoStr) {
+                const [y, m, d] = isoStr.split('-').map(Number);
+                const utc = Date.UTC(y, m - 1, d);
+                const diffDays = Math.round((utc - BCL_ANCHOR_UTC_MS) / MS_PER_DAY);
+                return diffDays % 14 === 0;
+            }
+
+            function isThursday(isoStr) {
+                return parseLocalDate(isoStr).getDay() === 4;
+            }
+
+            function is30thPayday(isoStr) {
+                const [y, m, d] = isoStr.split('-').map(Number);
+                if (d === 30) return true;
+                if (m === 2) {
+                    const lastDayOfFeb = new Date(y, 2, 0).getDate();
+                    return d === lastDayOfFeb;
+                }
+                return false;
+            }
+
+            function formatMoney(val) {
+                const num = parseFloat(val) || 0;
+                return '$' + num.toLocaleString('en-US', {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                });
+            }
+
+            function escapeHTML(str) {
+                return String(str ?? '')
+                    .replace(/&/g, '&amp;')
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;')
+                    .replace(/"/g, '&quot;')
+                    .replace(/'/g, '&#39;');
+            }
+
+            function makeCanonicalKey(date, member, stream) {
+                return `${date}__${member}__${stream}`;
+            }
+
+            function getCanonicalEntry(date, member, stream) {
+                return appState.entries[makeCanonicalKey(date, member, stream)] || null;
+            }
+
+            function upsertCanonicalLog({ date, member, stream, amount, hours, rate, isHourly, note }) {
+                const key = makeCanonicalKey(date, member, stream);
+                const existing = appState.entries[key];
+                const cleanAmount = Number((Math.max(0, parseFloat(amount) || 0)).toFixed(2));
+                const resolvedNote = typeof note === 'string'
+                    ? note
+                    : (existing && typeof existing.note === 'string' ? existing.note : '');
+                appState.entries[key] = {
+                    key,
+                    date,
+                    member,
+                    stream,
+                    amount: cleanAmount,
+                    logged: true,
+                    isHourly: Boolean(isHourly),
+                    hours: isHourly ? Math.max(0, parseFloat(hours) || 0) : undefined,
+                    rate: isHourly ? Math.max(0.01, parseFloat(rate) || 26) : undefined,
+                    note: resolvedNote,
+                    updatedAt: new Date().toISOString()
+                };
+            }
+
+            function seedImportedRecords(forceOverwrite = false) {
+                let addedOrRestored = 0;
+                const allImported = [
+                    ...IMPORTED_LYFT_RECORDS,
+                    ...IMPORTED_UBER_RECORDS,
+                    ...IMPORTED_ADITYA_MANUAL_RECORDS,
+                    ...IMPORTED_NEHA_RECORDS
+                ];
+                const touchedDates = new Set();
+
+                allImported.forEach(rec => {
+                    const key = makeCanonicalKey(rec.date, rec.member, rec.stream);
+                    touchedDates.add(rec.date);
+                    if (forceOverwrite || !appState.entries[key]) {
+                        upsertCanonicalLog({
+                            date: rec.date,
+                            member: rec.member,
+                            stream: rec.stream,
+                            amount: rec.amount,
+                            hours: rec.hours,
+                            rate: rec.rate,
+                            isHourly: Boolean(rec.isHourly),
+                            note: rec.note
+                        });
+                        addedOrRestored++;
+                    }
+                });
+
+                touchedDates.forEach(dateISO => {
+                    const dayTotal = getAllEntriesArray()
+                        .filter(e => e.date === dateISO)
+                        .reduce((sum, e) => sum + e.amount, 0);
+                    if (!appState.completedDates[dateISO] || forceOverwrite) {
+                        appState.completedDates[dateISO] = {
+                            completedAt: new Date().toISOString(),
+                            grandTotal: dayTotal
+                        };
+                    }
+                });
+
+                if (addedOrRestored > 0) {
+                    saveToStorage(true);
+                }
+                return addedOrRestored;
+            }
+
+            function getAllEntriesArray() {
+                return Object.values(appState.entries);
+            }
+
+            function loadFromStorage() {
+                try {
+                    const raw = localStorage.getItem(STORAGE_KEY) || localStorage.getItem(BACKUP_STORAGE_KEY);
+                    if (!raw) return;
+                    const parsed = JSON.parse(raw);
+                    if (parsed.rates && typeof parsed.rates === 'object') {
+                        if (typeof parsed.rates.Aditya === 'number' && parsed.rates.Aditya > 0) {
+                            appState.rates.Aditya = parsed.rates.Aditya;
+                        }
+                        if (typeof parsed.rates.Neha === 'number' && parsed.rates.Neha > 0) {
+                            appState.rates.Neha = parsed.rates.Neha;
+                        }
+                    }
+                    if (parsed.entries && typeof parsed.entries === 'object') {
+                        appState.entries = parsed.entries;
+                    }
+                    if (parsed.completedDates && typeof parsed.completedDates === 'object') {
+                        appState.completedDates = parsed.completedDates;
+                    }
+                } catch (err) {
+                    console.warn('Could not load state from localStorage:', err);
+                }
+            }
+
+            function saveToStorage(writeBackup = true) {
+                try {
+                    const payload = JSON.stringify({
+                        rates: appState.rates,
+                        entries: appState.entries,
+                        completedDates: appState.completedDates,
+                        lastSavedAt: new Date().toISOString()
+                    });
+                    localStorage.setItem(STORAGE_KEY, payload);
+                    if (writeBackup) {
+                        localStorage.setItem(BACKUP_STORAGE_KEY, payload);
+                    }
+                    appState.hasUnsavedEdits = false;
+                    updateHeaderSaveBadge();
+                } catch (err) {
+                    console.warn('Could not persist state to localStorage:', err);
+                }
+            }
+
+            function updateHeaderSaveBadge() {
+                const badge = document.getElementById('headerSaveStatusBadge');
+                if (!badge) return;
+                if (appState.hasUnsavedEdits) {
+                    badge.className = 'px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-400/40 text-[10px] sm:text-[11px] font-extrabold';
+                    badge.textContent = 'Unsaved Edits';
+                } else {
+                    badge.className = 'px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-400/30 text-[10px] sm:text-[11px] font-extrabold';
+                    badge.textContent = 'All Saved ✓';
+                }
+            }
+
+            function flushVisibleDailyInputsToState(markDayCompleted = true) {
+                const dateISO = appState.selectedDate || getTodayISO();
+                const showBclBiWeekly = isBiWeeklyBclPayday(dateISO) || appState.showOffSchedule;
+                const showThu = isThursday(dateISO) || appState.showOffSchedule;
+                const show30th = is30thPayday(dateISO) || appState.showOffSchedule;
+
+                const aHrs = Math.max(0, parseFloat(document.getElementById('input-Aditya-bcl-hours')?.value) || 0);
+                const aRateVal = parseFloat(document.getElementById('input-Aditya-bcl-rate')?.value);
+                const aRate = (!isNaN(aRateVal) && aRateVal > 0) ? aRateVal : appState.rates.Aditya;
+                appState.rates.Aditya = aRate;
+                upsertCanonicalLog({
+                    date: dateISO,
+                    member: 'Aditya',
+                    stream: 'BC Liquor • Daily Shift Hours',
+                    amount: Number((aHrs * aRate).toFixed(2)),
+                    hours: aHrs,
+                    rate: aRate,
+                    isHourly: true
+                });
+
+                if (showBclBiWeekly) {
+                    const aBw = Math.max(0, parseFloat(document.getElementById('input-Aditya-bcl-biweekly')?.value) || 0);
+                    upsertCanonicalLog({
+                        date: dateISO,
+                        member: 'Aditya',
+                        stream: 'BC Liquor • Bi-Weekly Pay',
+                        amount: aBw,
+                        isHourly: false
+                    });
+                }
+
+                ADITYA_DAILY_STREAMS.forEach(s => {
+                    const val = Math.max(0, parseFloat(document.getElementById(s.inputId)?.value) || 0);
+                    upsertCanonicalLog({
+                        date: dateISO,
+                        member: 'Aditya',
+                        stream: s.stream,
+                        amount: val,
+                        isHourly: false
+                    });
+                });
+
+                const nHrs = Math.max(0, parseFloat(document.getElementById('input-Neha-bcl-hours')?.value) || 0);
+                const nRateVal = parseFloat(document.getElementById('input-Neha-bcl-rate')?.value);
+                const nRate = (!isNaN(nRateVal) && nRateVal > 0) ? nRateVal : appState.rates.Neha;
+                appState.rates.Neha = nRate;
+                upsertCanonicalLog({
+                    date: dateISO,
+                    member: 'Neha',
+                    stream: 'BC Liquor • Daily Shift Hours',
+                    amount: Number((nHrs * nRate).toFixed(2)),
+                    hours: nHrs,
+                    rate: nRate,
+                    isHourly: true
+                });
+
+                if (showBclBiWeekly) {
+                    const nBw = Math.max(0, parseFloat(document.getElementById('input-Neha-bcl-biweekly')?.value) || 0);
+                    upsertCanonicalLog({
+                        date: dateISO,
+                        member: 'Neha',
+                        stream: 'BC Liquor • Bi-Weekly Pay',
+                        amount: nBw,
+                        isHourly: false
+                    });
+                }
+
+                if (show30th) {
+                    const nMon = Math.max(0, parseFloat(document.getElementById('input-Neha-monthly')?.value) || 0);
+                    upsertCanonicalLog({
+                        date: dateISO,
+                        member: 'Neha',
+                        stream: 'Monthly Salary',
+                        amount: nMon,
+                        isHourly: false
+                    });
+                }
+
+                if (showThu) {
+                    const namitVal = Math.max(0, parseFloat(document.getElementById('input-Namit-weekly')?.value) || 0);
+                    upsertCanonicalLog({
+                        date: dateISO,
+                        member: 'Namit',
+                        stream: 'Weekly Income',
+                        amount: namitVal,
+                        isHourly: false
+                    });
+                }
+
+                if (show30th) {
+                    const shanayaVal = Math.max(0, parseFloat(document.getElementById('input-Shanaya-ccb')?.value) || 0);
+                    upsertCanonicalLog({
+                        date: dateISO,
+                        member: 'Shanaya',
+                        stream: 'Child Care Benefit',
+                        amount: shanayaVal,
+                        isHourly: false
+                    });
+
+                    const skVal = Math.max(0, parseFloat(document.getElementById('input-SK-monthly')?.value) || 0);
+                    upsertCanonicalLog({
+                        date: dateISO,
+                        member: 'S.K. Surendra Katyal',
+                        stream: 'Monthly Income',
+                        amount: skVal,
+                        isHourly: false
+                    });
+                }
+
+                const dayTotal = getAllEntriesArray()
+                    .filter(e => e.date === dateISO)
+                    .reduce((sum, e) => sum + e.amount, 0);
+
+                if (markDayCompleted) {
+                    appState.completedDates[dateISO] = {
+                        completedAt: new Date().toISOString(),
+                        grandTotal: dayTotal
+                    };
+                }
+
+                return dayTotal;
+            }
+
+            function handleMasterSaveAll() {
+                if (appState.activeTab === 'entry' || appState.hasUnsavedEdits) {
+                    flushVisibleDailyInputsToState(true);
+                }
+                saveToStorage(true);
+                hideUnsavedBanner();
+                renderAll();
+                const totalEntries = getAllEntriesArray().length;
+                showToast(`All Data Locked & Saved ✓ (${totalEntries} records protected)`);
+            }
+
+            function showToast(msg) {
+                const banner = document.getElementById('toastBanner');
+                const textEl = document.getElementById('toastMessage');
+                if (!banner || !textEl) return;
+                textEl.textContent = msg;
+                banner.classList.remove('hidden');
+                clearTimeout(toastTimeout);
+                toastTimeout = setTimeout(() => banner.classList.add('hidden'), 3400);
+            }
+
+            function copyTextToClipboard(text) {
+                const ta = document.createElement('textarea');
+                ta.value = text;
+                ta.style.position = 'fixed';
+                ta.style.opacity = '0';
+                document.body.appendChild(ta);
+                ta.select();
+                try { document.execCommand('copy'); } catch (e) {}
+                document.body.removeChild(ta);
+            }
+
+            function showUnsavedBanner(actionCallback) {
+                appState.pendingActionAfterUnsaved = actionCallback;
+                const banner = document.getElementById('unsavedPromptBanner');
+                if (banner) {
+                    banner.classList.remove('hidden');
+                    banner.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            }
+
+            function hideUnsavedBanner() {
+                appState.pendingActionAfterUnsaved = null;
+                const banner = document.getElementById('unsavedPromptBanner');
+                if (banner) banner.classList.add('hidden');
+            }
+
+            function guardNavigationIfUnsaved(proceedFn) {
+                if (appState.activeTab === 'entry' && appState.hasUnsavedEdits) {
+                    showUnsavedBanner(proceedFn);
+                    return;
+                }
+                proceedFn();
+            }
+
+            function switchTab(tabName) {
+                const performSwitch = () => {
+                    appState.activeTab = tabName;
+                    hideUnsavedBanner();
+                    const tabs = ['home', 'entry', 'history'];
+                    const navMap = { home: 'navTabHome', entry: 'navTabEntry', history: 'navTabHistory' };
+                    const viewMap = { home: 'viewTabHome', entry: 'viewTabEntry', history: 'viewTabHistory' };
+
+                    tabs.forEach(t => {
+                        const btn = document.getElementById(navMap[t]);
+                        const view = document.getElementById(viewMap[t]);
+                        if (!btn || !view) return;
+                        if (t === tabName) {
+                            btn.className = 'px-3 py-2.5 rounded-xl text-xs sm:text-sm font-extrabold bg-white text-slate-900 shadow-sm transition';
+                            view.classList.remove('hidden');
+                        } else {
+                            btn.className = 'px-3 py-2.5 rounded-xl text-xs sm:text-sm font-bold text-slate-600 hover:text-slate-900 transition';
+                            view.classList.add('hidden');
+                        }
+                    });
+
+                    if (tabName === 'entry') {
+                        prefillInputsForDate(appState.selectedDate);
+                    }
+                    renderAll();
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                };
+
+                if (tabName !== appState.activeTab) {
+                    guardNavigationIfUnsaved(performSwitch);
+                } else {
+                    performSwitch();
+                }
+            }
+
+            function setSelectedDate(isoStr) {
+                if (!isoStr) return;
+                const applyDate = () => {
+                    appState.selectedDate = isoStr;
+                    appState.showOffSchedule = false;
+                    appState.hasUnsavedEdits = false;
+                    updateHeaderSaveBadge();
+                    hideUnsavedBanner();
+
+                    const offToggle = document.getElementById('toggleOffSchedulePaydays');
+                    if (offToggle) offToggle.checked = false;
+
+                    const homePicker = document.getElementById('homeDatePicker');
+                    const entryPicker = document.getElementById('entryDatePicker');
+                    const histMonth = document.getElementById('historyMonthFilter');
+
+                    if (homePicker) homePicker.value = isoStr;
+                    if (entryPicker) entryPicker.value = isoStr;
+                    if (histMonth) histMonth.value = isoStr.slice(0, 7);
+
+                    prefillInputsForDate(isoStr);
+                    renderAll();
+                };
+
+                guardNavigationIfUnsaved(applyDate);
+            }
+
+            function buildAdityaDollarRows() {
+                const container = document.getElementById('adityaDollarStreamsContainer');
+                if (!container) return;
+                container.innerHTML = ADITYA_DAILY_STREAMS.map(s => `
+                    <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 flex flex-wrap items-center justify-between gap-2">
+                        <div class="flex items-center gap-2 flex-wrap">
+                            <span class="text-xs sm:text-sm font-extrabold text-slate-900">${escapeHTML(s.stream)}</span>
+                            <span id="${s.pillId}" class="px-2.5 py-0.5 rounded-full bg-white border border-slate-200 text-[11px] font-bold text-slate-500">
+                                Not Logged
+                            </span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <div class="relative w-28 sm:w-32">
+                                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-extrabold text-xs">$</span>
+                                <input type="number" id="${s.inputId}" data-role="dollar-input" step="0.01" min="0" value="0"
+                                    class="w-full pl-6 pr-2.5 py-2 rounded-xl border border-slate-300 bg-white text-sm font-extrabold text-slate-900">
+                            </div>
+                            <button type="button" data-action="save-dollar-stream" data-member="Aditya" data-stream="${escapeHTML(s.stream)}" data-input="${s.inputId}"
+                                class="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-extrabold">
+                                Save
+                            </button>
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            function prefillInputsForDate(dateISO) {
+                const target = dateISO || appState.selectedDate || getTodayISO();
+
+                const adityaShift = getCanonicalEntry(target, 'Aditya', 'BC Liquor • Daily Shift Hours');
+                const adityaHrsEl = document.getElementById('input-Aditya-bcl-hours');
+                const adityaRateEl = document.getElementById('input-Aditya-bcl-rate');
+                if (adityaHrsEl) adityaHrsEl.value = adityaShift && typeof adityaShift.hours === 'number' ? String(adityaShift.hours) : '0';
+                if (adityaRateEl) adityaRateEl.value = adityaShift && typeof adityaShift.rate === 'number' ? String(adityaShift.rate) : String(appState.rates.Aditya);
+                updateBclReadout('Aditya');
+
+                const adityaBw = getCanonicalEntry(target, 'Aditya', 'BC Liquor • Bi-Weekly Pay');
+                const adityaBwEl = document.getElementById('input-Aditya-bcl-biweekly');
+                if (adityaBwEl) adityaBwEl.value = adityaBw ? String(adityaBw.amount) : '0';
+
+                ADITYA_DAILY_STREAMS.forEach(s => {
+                    const rec = getCanonicalEntry(target, 'Aditya', s.stream);
+                    const inp = document.getElementById(s.inputId);
+                    if (inp) inp.value = rec ? String(rec.amount) : '0';
+                });
+
+                const nehaShift = getCanonicalEntry(target, 'Neha', 'BC Liquor • Daily Shift Hours');
+                const nehaHrsEl = document.getElementById('input-Neha-bcl-hours');
+                const nehaRateEl = document.getElementById('input-Neha-bcl-rate');
+                if (nehaHrsEl) nehaHrsEl.value = nehaShift && typeof nehaShift.hours === 'number' ? String(nehaShift.hours) : '0';
+                if (nehaRateEl) nehaRateEl.value = nehaShift && typeof nehaShift.rate === 'number' ? String(nehaShift.rate) : String(appState.rates.Neha);
+                updateBclReadout('Neha');
+
+                const nehaBw = getCanonicalEntry(target, 'Neha', 'BC Liquor • Bi-Weekly Pay');
+                const nehaBwEl = document.getElementById('input-Neha-bcl-biweekly');
+                if (nehaBwEl) nehaBwEl.value = nehaBw ? String(nehaBw.amount) : '0';
+
+                const nehaMon = getCanonicalEntry(target, 'Neha', 'Monthly Salary');
+                const nehaMonEl = document.getElementById('input-Neha-monthly');
+                if (nehaMonEl) nehaMonEl.value = nehaMon ? String(nehaMon.amount) : '0';
+
+                const namitRec = getCanonicalEntry(target, 'Namit', 'Weekly Income');
+                const namitEl = document.getElementById('input-Namit-weekly');
+                if (namitEl) namitEl.value = namitRec ? String(namitRec.amount) : '0';
+
+                const shanayaRec = getCanonicalEntry(target, 'Shanaya', 'Child Care Benefit');
+                const shanayaEl = document.getElementById('input-Shanaya-ccb');
+                if (shanayaEl) shanayaEl.value = shanayaRec ? String(shanayaRec.amount) : '0';
+
+                const skRec = getCanonicalEntry(target, 'S.K. Surendra Katyal', 'Monthly Income');
+                const skEl = document.getElementById('input-SK-monthly');
+                if (skEl) skEl.value = skRec ? String(skRec.amount) : '0';
+
+                appState.hasUnsavedEdits = false;
+                updateHeaderSaveBadge();
+            }
+
+            function updateBclReadout(member) {
+                const hrsEl = document.getElementById(`input-${member}-bcl-hours`);
+                const rateEl = document.getElementById(`input-${member}-bcl-rate`);
+                const readoutEl = document.getElementById(`readout-${member}-BCL-Shift`);
+                const hrs = Math.max(0, parseFloat(hrsEl?.value) || 0);
+                const rate = Math.max(0, parseFloat(rateEl?.value) || 0);
+                const total = hrs * rate;
+                if (readoutEl) {
+                    readoutEl.textContent = `${hrs} hrs × ${formatMoney(rate)} = ${formatMoney(total)}`;
+                }
+            }
+
+            function handleSaveBclShift(member) {
+                const dateISO = appState.selectedDate || getTodayISO();
+                const hrs = Math.max(0, parseFloat(document.getElementById(`input-${member}-bcl-hours`)?.value) || 0);
+                const rateInput = parseFloat(document.getElementById(`input-${member}-bcl-rate`)?.value);
+                const rate = (!isNaN(rateInput) && rateInput > 0) ? rateInput : (appState.rates[member] || 26);
+
+                appState.rates[member] = rate;
+
+                const total = Number((hrs * rate).toFixed(2));
+                upsertCanonicalLog({
+                    date: dateISO,
+                    member,
+                    stream: 'BC Liquor • Daily Shift Hours',
+                    amount: total,
+                    hours: hrs,
+                    rate,
+                    isHourly: true
+                });
+
+                updateBclReadout(member);
+                saveToStorage(true);
+                renderAll();
+                showToast(`Saved • ${formatMoney(total)} (${member} • ${hrs} hrs @ $${rate}/hr)`);
+            }
+
+            function handleSaveDollarStream(member, stream, inputId) {
+                const dateISO = appState.selectedDate || getTodayISO();
+                const inp = document.getElementById(inputId);
+                const parsed = inp ? parseFloat(inp.value) : 0;
+                const amount = (!isNaN(parsed) && parsed >= 0) ? parsed : 0;
+
+                upsertCanonicalLog({
+                    date: dateISO,
+                    member,
+                    stream,
+                    amount,
+                    isHourly: false
+                });
+
+                if (inp) inp.value = String(amount);
+                saveToStorage(true);
+                renderAll();
+                showToast(`Saved • ${formatMoney(amount)} (${member} • ${stream})`);
+            }
+
+            function handleSaveAndCompleteDay() {
+                const dateISO = appState.selectedDate || getTodayISO();
+                const dayTotal = flushVisibleDailyInputsToState(true);
+                saveToStorage(true);
+                switchTab('home');
+                showToast(`Day Completed ✓ (${formatDisplayDate(dateISO)}) — Grand Total: ${formatMoney(dayTotal)}`);
+            }
+
+            function buildHomeSummaryText() {
+                const todayISO = getTodayISO();
+                const dateISO = appState.selectedDate || todayISO;
+                const isWeekly = appState.homeMode === 'weekly';
+                const weekInfo = getWeekBounds(dateISO);
+                const targetDates = isWeekly ? weekInfo.dates : [dateISO];
+                const periodEntries = getAllEntriesArray().filter(e => targetDates.includes(e.date));
+                const grandTotal = periodEntries.reduce((s, e) => s + e.amount, 0);
+
+                const titleLine = isWeekly
+                    ? `*Family Income — ${formatWeekRangeLabel(dateISO)}*`
+                    : `*Family Income — ${formatDisplayDate(dateISO)}*`;
+
+                const lines = [titleLine, ''];
+
+                FAMILY_MEMBERS.forEach(m => {
+                    const mEntries = periodEntries.filter(e => e.member === m.name);
+                    const mTotal = mEntries.reduce((s, e) => s + e.amount, 0);
+                    lines.push(`*${m.order}. ${m.name}: ${formatMoney(mTotal)}*`);
+                    m.streams.forEach(streamName => {
+                        const sEntries = mEntries.filter(e => e.stream === streamName);
+                        const sSum = sEntries.reduce((s, e) => s + e.amount, 0);
+                        const hrsSum = sEntries.reduce((s, e) => s + (e.hours || 0), 0);
+                        if (sSum > 0 || !isWeekly) {
+                            const hrNote = hrsSum > 0 ? ` (${hrsSum}h)` : '';
+                            lines.push(`   • ${streamName}: ${formatMoney(sSum)}${hrNote}`);
+                        }
+                    });
+                });
+
+                lines.push('');
+                lines.push(`*Grand Total (All 5 Members): ${formatMoney(grandTotal)}*`);
+                return lines.join('\n');
+            }
+
+            function renderHome() {
+                const todayISO = getTodayISO();
+                const dateISO = appState.selectedDate || todayISO;
+                const monthISO = dateISO.slice(0, 7);
+                const isWeekly = appState.homeMode === 'weekly';
+                const weekInfo = getWeekBounds(dateISO);
+                const isCurrentWeek = weekInfo.dates.includes(todayISO);
+
+                const btnDaily = document.getElementById('btnHomeModeDaily');
+                const btnWeekly = document.getElementById('btnHomeModeWeekly');
+                if (btnDaily && btnWeekly) {
+                    btnDaily.className = !isWeekly
+                        ? 'px-4 py-2 rounded-lg text-xs font-extrabold bg-slate-900 text-white shadow-sm transition'
+                        : 'px-4 py-2 rounded-lg text-xs font-bold text-slate-600 hover:text-slate-900 transition';
+                    btnWeekly.className = isWeekly
+                        ? 'px-4 py-2 rounded-lg text-xs font-extrabold bg-slate-900 text-white shadow-sm transition'
+                        : 'px-4 py-2 rounded-lg text-xs font-bold text-slate-600 hover:text-slate-900 transition';
+                }
+
+                const homeActiveDateLabel = document.getElementById('homeActiveDateLabel');
+                if (homeActiveDateLabel) {
+                    homeActiveDateLabel.textContent = isWeekly
+                        ? formatWeekRangeLabel(dateISO)
+                        : formatDisplayDate(dateISO);
+                }
+
+                const jumpRow = document.getElementById('homeJumpTodayRow');
+                const jumpBtn = document.getElementById('homeJumpTodayBtn');
+                if (jumpRow && jumpBtn) {
+                    const shouldHide = isWeekly ? isCurrentWeek : (dateISO === todayISO);
+                    jumpRow.classList.toggle('hidden', shouldHide);
+                    jumpBtn.textContent = isWeekly ? 'Jump to Current Week' : 'Jump to Today';
+                }
+
+                const statusPill = document.getElementById('homeDayStatusPill');
+                if (statusPill) {
+                    if (isWeekly) {
+                        const completedCount = weekInfo.dates.filter(d => Boolean(appState.completedDates[d])).length;
+                        statusPill.className = 'px-2.5 py-0.5 rounded-full bg-indigo-100 text-indigo-900 border border-indigo-200 text-xs font-extrabold';
+                        statusPill.textContent = `${completedCount}/7 Days Logged`;
+                    } else {
+                        const isCompleted = Boolean(appState.completedDates[dateISO]);
+                        if (isCompleted) {
+                            statusPill.className = 'px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300 text-xs font-extrabold';
+                            statusPill.textContent = 'Completed ✓';
+                        } else {
+                            statusPill.className = 'px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-900 border border-amber-200 text-xs font-extrabold';
+                            statusPill.textContent = 'In Progress';
+                        }
+                    }
+                }
+
+                const targetDates = isWeekly ? weekInfo.dates : [dateISO];
+                const periodEntries = getAllEntriesArray().filter(e => targetDates.includes(e.date));
+                const periodGrandTotal = periodEntries.reduce((s, e) => s + e.amount, 0);
+
+                document.getElementById('homePeriodTotalLabel').textContent = isWeekly
+                    ? 'Weekly Total (Mon–Sun)'
+                    : 'Selected Day Total';
+                document.getElementById('homeSelectedDayGrandTotal').textContent = formatMoney(periodGrandTotal);
+
+                const isBclFri = isBiWeeklyBclPayday(dateISO);
+                const isThu = isThursday(dateISO);
+                const is30 = is30thPayday(dateISO);
+                const schedNotes = [];
+                if (isWeekly) {
+                    schedNotes.push('Showing 7-day totals (Mon–Sun) across all 5 members & streams');
+                } else {
+                    if (isBclFri) schedNotes.push('BC Liquor Bi-Weekly Pay');
+                    if (isThu) schedNotes.push('Namit Thursday');
+                    if (is30) schedNotes.push('30th Monthly Paydays');
+                }
+                document.getElementById('homeScheduledHintText').textContent = isWeekly
+                    ? schedNotes[0]
+                    : (schedNotes.length > 0 ? `Scheduled today: ${schedNotes.join(' • ')}` : 'All 5 members shown • Tap any member to inspect streams');
+
+                const allExpanded = FAMILY_MEMBERS.every(m => Boolean(appState.expandedMembers[m.name]));
+                const expandAllBtn = document.getElementById('btnToggleExpandAll');
+                if (expandAllBtn) {
+                    expandAllBtn.textContent = allExpanded ? 'Collapse All' : 'Expand All';
+                }
+
+                const memberListEl = document.getElementById('homeSelectedDayMemberList');
+                memberListEl.innerHTML = FAMILY_MEMBERS.map(m => {
+                    const mEntries = periodEntries.filter(e => e.member === m.name);
+                    const mTotal = mEntries.reduce((s, e) => s + e.amount, 0);
+                    const isExpanded = Boolean(appState.expandedMembers[m.name]);
+
+                    const activeSummaryParts = m.streams
+                        .map(sName => {
+                            const sEntries = mEntries.filter(e => e.stream === sName);
+                            const sSum = sEntries.reduce((s, e) => s + e.amount, 0);
+                            const sHrs = sEntries.reduce((s, e) => s + (e.hours || 0), 0);
+                            if (sSum <= 0 && sHrs <= 0) return null;
+                            return `${sName}: ${formatMoney(sSum)}${sHrs > 0 ? ` (${sHrs}h)` : ''}`;
+                        })
+                        .filter(Boolean);
+
+                    const subtitleText = activeSummaryParts.length > 0
+                        ? activeSummaryParts.join(' • ')
+                        : (isWeekly ? 'No earnings logged this week ($0.00)' : 'No earnings logged this day ($0.00)');
+
+                    const streamRowsHTML = m.streams.map(sName => {
+                        const sEntries = mEntries.filter(e => e.stream === sName);
+                        const sSum = sEntries.reduce((s, e) => s + e.amount, 0);
+                        const sHrs = sEntries.reduce((s, e) => s + (e.hours || 0), 0);
+                        const hasAnyLog = sEntries.length > 0;
+                        return `
+                            <div class="flex items-center justify-between py-2 px-3 rounded-xl ${sSum > 0 ? 'bg-emerald-50/70 border border-emerald-200/80' : 'bg-white border border-slate-200/70'}">
+                                <div class="flex items-center gap-2 min-w-0">
+                                    <span class="text-xs font-bold text-slate-800 truncate">${escapeHTML(sName)}</span>
+                                    ${sHrs > 0 ? `<span class="px-2 py-0.5 rounded-md bg-amber-100 text-amber-900 text-[10px] font-extrabold">${sHrs} hrs</span>` : ''}
+                                    ${hasAnyLog && sSum === 0 ? `<span class="px-2 py-0.5 rounded-md bg-slate-100 text-slate-600 text-[10px] font-bold">Logged $0</span>` : ''}
+                                </div>
+                                <span class="text-xs sm:text-sm font-extrabold ${sSum > 0 ? 'text-emerald-700' : 'text-slate-400'} shrink-0">
+                                    ${formatMoney(sSum)}
+                                </span>
+                            </div>
+                        `;
+                    }).join('');
+
+                    return `
+                        <div class="rounded-2xl border ${mTotal > 0 ? 'border-slate-200 bg-white' : 'border-slate-200/80 bg-slate-50/50'} overflow-hidden transition">
+                            <button type="button" data-action="toggle-member-accordion" data-member="${escapeHTML(m.name)}"
+                                aria-expanded="${isExpanded ? 'true' : 'false'}"
+                                class="w-full p-3.5 sm:p-4 flex items-center justify-between gap-3 text-left hover:bg-slate-50 transition">
+                                <div class="min-w-0 flex-1">
+                                    <div class="flex items-center gap-2 flex-wrap">
+                                        <span class="w-6 h-6 rounded-lg ${m.badgeBg} text-white text-xs font-extrabold flex items-center justify-center shrink-0">${m.order}</span>
+                                        <span class="text-sm font-extrabold text-slate-900">${escapeHTML(m.name)}</span>
+                                        ${mTotal > 0
+                                            ? `<span class="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-extrabold">Active</span>`
+                                            : `<span class="px-2 py-0.5 rounded-full bg-slate-100 text-slate-500 text-[10px] font-bold">$0.00</span>`
+                                        }
+                                    </div>
+                                    <p class="text-xs text-slate-500 truncate mt-1 pl-8">${escapeHTML(subtitleText)}</p>
+                                </div>
+                                <div class="flex items-center gap-2.5 shrink-0">
+                                    <span class="text-sm sm:text-base font-extrabold ${mTotal > 0 ? 'text-emerald-600' : 'text-slate-400'}">
+                                        ${formatMoney(mTotal)}
+                                    </span>
+                                    <span class="w-6 h-6 rounded-lg bg-slate-100 text-slate-600 flex items-center justify-center text-xs font-extrabold">
+                                        ${isExpanded ? '▲' : '▼'}
+                                    </span>
+                                </div>
+                            </button>
+                            ${isExpanded ? `
+                                <div class="px-3.5 sm:px-4 pb-3.5 pt-2 bg-slate-50 border-t border-slate-100 space-y-1.5">
+                                    <div class="flex items-center justify-between pb-1">
+                                        <span class="text-[10px] font-extrabold uppercase tracking-wider text-slate-400">
+                                            ${isWeekly ? 'Weekly Stream Breakdown (Mon–Sun)' : 'Daily Stream Breakdown'}
+                                        </span>
+                                        <span class="text-[10px] font-bold text-slate-400">${m.streams.length} streams</span>
+                                    </div>
+                                    ${streamRowsHTML}
+                                </div>
+                            ` : ''}
+                        </div>
+                    `;
+                }).join('');
+
+                const monthEntries = getAllEntriesArray().filter(e => e.date.startsWith(monthISO));
+                const monthGrandTotal = monthEntries.reduce((s, e) => s + e.amount, 0);
+                document.getElementById('homeMonthLabel').textContent = monthISO;
+                document.getElementById('homeMonthGrandTotal').textContent = formatMoney(monthGrandTotal);
+
+                document.getElementById('homeMonthFiveMembersGrid').innerHTML = FAMILY_MEMBERS.map(m => {
+                    const mSum = monthEntries
+                        .filter(e => e.member === m.name)
+                        .reduce((s, e) => s + e.amount, 0);
+                    return `
+                        <div class="p-3 rounded-xl bg-white/5 border border-white/10 flex items-center justify-between gap-2">
+                            <span class="text-xs font-bold text-slate-300 truncate">${m.order}. ${escapeHTML(m.shortName)}</span>
+                            <span class="text-sm font-extrabold ${mSum > 0 ? 'text-emerald-400' : 'text-white'} shrink-0">${formatMoney(mSum)}</span>
+                        </div>
+                    `;
+                }).join('');
+
+                const dateSet = new Set([
+                    ...Object.keys(appState.completedDates),
+                    ...getAllEntriesArray().map(e => e.date)
+                ]);
+                const recentDates = Array.from(dateSet).sort().reverse().slice(0, 7);
+                const recentListEl = document.getElementById('homeRecentDaysList');
+
+                if (recentDates.length === 0) {
+                    recentListEl.innerHTML = `<p class="py-3 text-xs text-slate-400">No days logged yet. Click "+ Log Entry" above to begin.</p>`;
+                } else {
+                    recentListEl.innerHTML = recentDates.map(dStr => {
+                        const dTotal = getAllEntriesArray()
+                            .filter(e => e.date === dStr)
+                            .reduce((s, e) => s + e.amount, 0);
+                        const done = Boolean(appState.completedDates[dStr]);
+                        return `
+                            <button type="button" data-action="open-recent-day" data-date="${escapeHTML(dStr)}"
+                                class="w-full py-3 px-2 hover:bg-slate-50 rounded-xl flex items-center justify-between gap-2 text-left transition">
+                                <div class="flex items-center gap-2 flex-wrap">
+                                    <span class="text-xs sm:text-sm font-extrabold text-slate-900">${escapeHTML(formatDisplayDate(dStr))}</span>
+                                    ${done
+                                        ? `<span class="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-extrabold">Completed ✓</span>`
+                                        : `<span class="px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 text-[10px] font-bold">Logged</span>`
+                                    }
+                                </div>
+                                <div class="flex items-center gap-2 shrink-0">
+                                    <span class="text-sm font-extrabold text-emerald-700">${formatMoney(dTotal)}</span>
+                                    <span class="text-xs font-bold text-slate-400">Edit →</span>
+                                </div>
+                            </button>
+                        `;
+                    }).join('');
+                }
+
+                const resetBtn = document.getElementById('homeResetBtn');
+                if (resetBtn) {
+                    resetBtn.textContent = appState.pendingResetConfirm ? 'Tap Again to Confirm Reset!' : 'Reset to Seed Data';
+                    resetBtn.className = appState.pendingResetConfirm
+                        ? 'px-3 py-1.5 rounded-xl bg-rose-600 text-white text-xs font-extrabold transition'
+                        : 'px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-rose-50 text-slate-600 hover:text-rose-700 text-xs font-extrabold transition';
+                }
+            }
+
+            function renderDailyEntry() {
+                const todayISO = getTodayISO();
+                const dateISO = appState.selectedDate || todayISO;
+                const displayDate = formatDisplayDate(dateISO);
+
+                document.getElementById('entryDayBadge').textContent = displayDate;
+                document.getElementById('entryCompletedBadge').classList.toggle('hidden', !appState.completedDates[dateISO]);
+                const entryJumpRow = document.getElementById('entryJumpTodayRow');
+                if (entryJumpRow) entryJumpRow.classList.toggle('hidden', dateISO === todayISO);
+
+                const isBclFri = isBiWeeklyBclPayday(dateISO);
+                const isThu = isThursday(dateISO);
+                const is30 = is30thPayday(dateISO);
+                const override = appState.showOffSchedule;
+
+                const showBclBiWeekly = isBclFri || override;
+                const showThu = isThu || override;
+                const show30th = is30 || override;
+
+                const activeSummary = ['Daily streams active'];
+                if (isBclFri) activeSummary.push('BC Liquor Bi-Weekly Pay ✓');
+                if (isThu) activeSummary.push('Namit Thursday ✓');
+                if (is30) activeSummary.push('30th Paydays ✓');
+                document.getElementById('entryScheduleSummaryText').textContent = `${displayDate}: ${activeSummary.join(' • ')}`;
+
+                document.getElementById('adityaBclBiWeeklyRow').classList.toggle('hidden', !showBclBiWeekly);
+                document.getElementById('nehaBclBiWeeklyRow').classList.toggle('hidden', !showBclBiWeekly);
+                document.getElementById('nehaMonthlySalaryRow').classList.toggle('hidden', !show30th);
+                document.getElementById('cardMemberNamit').classList.toggle('hidden', !showThu);
+                document.getElementById('cardMemberShanaya').classList.toggle('hidden', !show30th);
+                document.getElementById('cardMemberSK').classList.toggle('hidden', !show30th);
+
+                const setPillState = (pillId, entry) => {
+                    const el = document.getElementById(pillId);
+                    if (!el) return;
+                    if (entry && entry.logged) {
+                        el.className = 'px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300 text-[11px] font-extrabold';
+                        el.textContent = `Logged • ${formatMoney(entry.amount)}`;
+                    } else {
+                        el.className = 'px-2.5 py-0.5 rounded-full bg-white border border-slate-200 text-[11px] font-bold text-slate-500';
+                        el.textContent = 'Not Logged';
+                    }
+                };
+
+                setPillState('pill-Aditya-BCL-Shift', getCanonicalEntry(dateISO, 'Aditya', 'BC Liquor • Daily Shift Hours'));
+                setPillState('pill-Aditya-BCL-BiWeekly', getCanonicalEntry(dateISO, 'Aditya', 'BC Liquor • Bi-Weekly Pay'));
+                ADITYA_DAILY_STREAMS.forEach(s => {
+                    setPillState(s.pillId, getCanonicalEntry(dateISO, 'Aditya', s.stream));
+                });
+
+                setPillState('pill-Neha-BCL-Shift', getCanonicalEntry(dateISO, 'Neha', 'BC Liquor • Daily Shift Hours'));
+                setPillState('pill-Neha-BCL-BiWeekly', getCanonicalEntry(dateISO, 'Neha', 'BC Liquor • Bi-Weekly Pay'));
+                setPillState('pill-Neha-Monthly', getCanonicalEntry(dateISO, 'Neha', 'Monthly Salary'));
+
+                setPillState('pill-Namit-Weekly', getCanonicalEntry(dateISO, 'Namit', 'Weekly Income'));
+                setPillState('pill-Shanaya-CCB', getCanonicalEntry(dateISO, 'Shanaya', 'Child Care Benefit'));
+                setPillState('pill-SK-Monthly', getCanonicalEntry(dateISO, 'S.K. Surendra Katyal', 'Monthly Income'));
+
+                renderEntryLiveTotals();
+            }
+
+            function renderEntryLiveTotals() {
+                const dateISO = appState.selectedDate || getTodayISO();
+                const displayDate = formatDisplayDate(dateISO);
+                const showBclBiWeekly = isBiWeeklyBclPayday(dateISO) || appState.showOffSchedule;
+                const showThu = isThursday(dateISO) || appState.showOffSchedule;
+                const show30th = is30thPayday(dateISO) || appState.showOffSchedule;
+
+                const aHrs = Math.max(0, parseFloat(document.getElementById('input-Aditya-bcl-hours')?.value) || 0);
+                const aRate = Math.max(0, parseFloat(document.getElementById('input-Aditya-bcl-rate')?.value) || 0);
+                let adityaTotal = Number((aHrs * aRate).toFixed(2));
+                if (showBclBiWeekly) {
+                    adityaTotal += Math.max(0, parseFloat(document.getElementById('input-Aditya-bcl-biweekly')?.value) || 0);
+                } else {
+                    const savedBw = getCanonicalEntry(dateISO, 'Aditya', 'BC Liquor • Bi-Weekly Pay');
+                    if (savedBw) adityaTotal += savedBw.amount;
+                }
+                ADITYA_DAILY_STREAMS.forEach(s => {
+                    adityaTotal += Math.max(0, parseFloat(document.getElementById(s.inputId)?.value) || 0);
+                });
+
+                const nHrs = Math.max(0, parseFloat(document.getElementById('input-Neha-bcl-hours')?.value) || 0);
+                const nRate = Math.max(0, parseFloat(document.getElementById('input-Neha-bcl-rate')?.value) || 0);
+                let nehaTotal = Number((nHrs * nRate).toFixed(2));
+                if (showBclBiWeekly) {
+                    nehaTotal += Math.max(0, parseFloat(document.getElementById('input-Neha-bcl-biweekly')?.value) || 0);
+                } else {
+                    const savedBw = getCanonicalEntry(dateISO, 'Neha', 'BC Liquor • Bi-Weekly Pay');
+                    if (savedBw) nehaTotal += savedBw.amount;
+                }
+                if (show30th) {
+                    nehaTotal += Math.max(0, parseFloat(document.getElementById('input-Neha-monthly')?.value) || 0);
+                } else {
+                    const savedMon = getCanonicalEntry(dateISO, 'Neha', 'Monthly Salary');
+                    if (savedMon) nehaTotal += savedMon.amount;
+                }
+
+                let namitTotal = 0;
+                if (showThu) {
+                    namitTotal = Math.max(0, parseFloat(document.getElementById('input-Namit-weekly')?.value) || 0);
+                } else {
+                    const savedNamit = getCanonicalEntry(dateISO, 'Namit', 'Weekly Income');
+                    if (savedNamit) namitTotal = savedNamit.amount;
+                }
+
+                let shanayaTotal = 0;
+                if (show30th) {
+                    shanayaTotal = Math.max(0, parseFloat(document.getElementById('input-Shanaya-ccb')?.value) || 0);
+                } else {
+                    const savedShanaya = getCanonicalEntry(dateISO, 'Shanaya', 'Child Care Benefit');
+                    if (savedShanaya) shanayaTotal = savedShanaya.amount;
+                }
+
+                let skTotal = 0;
+                if (show30th) {
+                    skTotal = Math.max(0, parseFloat(document.getElementById('input-SK-monthly')?.value) || 0);
+                } else {
+                    const savedSk = getCanonicalEntry(dateISO, 'S.K. Surendra Katyal', 'Monthly Income');
+                    if (savedSk) skTotal = savedSk.amount;
+                }
+
+                const memberTotals = {
+                    'Aditya': adityaTotal,
+                    'Neha': nehaTotal,
+                    'Namit': namitTotal,
+                    'Shanaya': shanayaTotal,
+                    'S.K. Surendra Katyal': skTotal
+                };
+
+                const grandTotal = adityaTotal + nehaTotal + namitTotal + shanayaTotal + skTotal;
+
+                document.getElementById('adityaDayTotalDisplay').textContent = formatMoney(adityaTotal);
+                document.getElementById('adityaHeaderPill').textContent = formatMoney(adityaTotal);
+
+                document.getElementById('nehaDayTotalDisplay').textContent = formatMoney(nehaTotal);
+                document.getElementById('nehaHeaderPill').textContent = formatMoney(nehaTotal);
+
+                document.getElementById('namitDayTotalDisplay').textContent = formatMoney(namitTotal);
+                document.getElementById('shanayaDayTotalDisplay').textContent = formatMoney(shanayaTotal);
+                document.getElementById('skDayTotalDisplay').textContent = formatMoney(skTotal);
+
+                document.getElementById('entryFooterDateLabel').textContent = displayDate;
+                document.getElementById('entryGrandTotalDisplay').textContent = formatMoney(grandTotal);
+
+                document.getElementById('entryFooterMemberBreakdown').innerHTML = FAMILY_MEMBERS.map(m => {
+                    const val = memberTotals[m.name] || 0;
+                    return `
+                        <div class="p-3 rounded-xl bg-white/5 border border-white/10">
+                            <span class="text-[11px] font-bold text-slate-400 block truncate">${m.order}. ${escapeHTML(m.shortName)}</span>
+                            <span class="text-sm sm:text-base font-extrabold ${val > 0 ? 'text-emerald-400' : 'text-white'} block mt-0.5">${formatMoney(val)}</span>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            function renderHistory() {
+                const container = document.getElementById('historyEntriesContainer');
+                if (!container) return;
+
+                const monthFilter = document.getElementById('historyMonthFilter')?.value || (appState.selectedDate || getTodayISO()).slice(0, 7);
+                const memberFilter = document.getElementById('historyMemberFilter')?.value || 'All';
+
+                const filtered = getAllEntriesArray()
+                    .filter(e => e.date.startsWith(monthFilter))
+                    .filter(e => memberFilter === 'All' || e.member === memberFilter)
+                    .sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : a.member.localeCompare(b.member)));
+
+                const totalSum = filtered.reduce((s, e) => s + e.amount, 0);
+
+                if (filtered.length === 0) {
+                    container.innerHTML = `
+                        <div class="p-6 rounded-2xl bg-slate-50 border border-slate-200 text-center text-xs sm:text-sm text-slate-500">
+                            No entries found for <strong>${escapeHTML(monthFilter)}</strong> (${escapeHTML(memberFilter)}).
+                        </div>
+                    `;
+                    return;
+                }
+
+                const rowsHTML = filtered.map(e => {
+                    const isPendingDel = appState.pendingDeleteKey === e.key;
+                    return `
+                        <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+                            <div class="min-w-0">
+                                <div class="flex items-center gap-2 flex-wrap">
+                                    <span class="text-xs font-extrabold text-slate-900">${escapeHTML(formatDisplayDate(e.date))}</span>
+                                    <span class="px-2 py-0.5 rounded-full bg-slate-900 text-white text-[10px] font-extrabold">${escapeHTML(e.member)}</span>
+                                    <span class="text-xs font-bold text-slate-700">${escapeHTML(e.stream)}</span>
+                                    ${e.isHourly ? `<span class="px-2 py-0.5 rounded-md bg-amber-100 text-amber-900 text-[10px] font-extrabold">${e.hours}h × $${e.rate}/hr</span>` : ''}
+                                </div>
+                                ${e.note ? `<p class="text-[11px] text-slate-500 mt-1 truncate">${escapeHTML(e.note)}</p>` : ''}
+                            </div>
+                            <div class="flex items-center justify-between sm:justify-end gap-2 shrink-0">
+                                <span class="text-sm font-extrabold text-emerald-700 mr-1">${formatMoney(e.amount)}</span>
+                                <button type="button" data-action="edit-history-entry" data-date="${escapeHTML(e.date)}"
+                                    class="px-3 py-1.5 rounded-lg bg-white hover:bg-slate-100 border border-slate-300 text-xs font-extrabold text-slate-800">
+                                    Edit
+                                </button>
+                                <button type="button" data-action="delete-history-entry" data-key="${escapeHTML(e.key)}"
+                                    class="px-3 py-1.5 rounded-lg ${isPendingDel ? 'bg-rose-600 text-white' : 'bg-white hover:bg-rose-50 text-rose-700 border border-rose-200'} text-xs font-extrabold">
+                                    ${isPendingDel ? 'Confirm Delete' : 'Delete'}
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+
+                container.innerHTML = `
+                    <div class="p-4 rounded-2xl bg-slate-900 text-white flex items-center justify-between">
+                        <span class="text-xs font-bold text-slate-300">Filtered Total (${filtered.length} entries)</span>
+                        <span class="text-lg font-extrabold text-emerald-400">${formatMoney(totalSum)}</span>
+                    </div>
+                    <div class="space-y-2.5">${rowsHTML}</div>
+                `;
+            }
+
+            function renderAll() {
+                updateHeaderSaveBadge();
+                renderHome();
+                renderDailyEntry();
+                renderHistory();
+            }
+
+            // -----------------------------------------------------------------
+            // CENTRALIZED EVENT DELEGATION
+            // -----------------------------------------------------------------
+            document.addEventListener('click', (e) => {
+                const btn = e.target.closest('[data-action]');
+                if (!btn) return;
+                const action = btn.dataset.action;
+
+                if (action === 'master-save-all') {
+                    handleMasterSaveAll();
+                } else if (action === 'switch-tab') {
+                    switchTab(btn.dataset.tab);
+                } else if (action === 'open-daily-entry-today') {
+                    setSelectedDate(getTodayISO());
+                    switchTab('entry');
+                } else if (action === 'open-daily-entry-selected') {
+                    switchTab('entry');
+                } else if (action === 'set-home-mode') {
+                    appState.homeMode = btn.dataset.mode === 'weekly' ? 'weekly' : 'daily';
+                    renderHome();
+                } else if (action === 'shift-home-period') {
+                    const dir = Number(btn.dataset.dir) || 0;
+                    const step = appState.homeMode === 'weekly' ? dir * 7 : dir;
+                    setSelectedDate(shiftDateISO(appState.selectedDate || getTodayISO(), step));
+                } else if (action === 'shift-date') {
+                    const days = Number(btn.dataset.days) || 0;
+                    setSelectedDate(shiftDateISO(appState.selectedDate || getTodayISO(), days));
+                } else if (action === 'set-date') {
+                    const val = btn.dataset.date === 'TODAY' ? getTodayISO() : btn.dataset.date;
+                    setSelectedDate(val);
+                } else if (action === 'toggle-member-accordion') {
+                    const memberName = btn.dataset.member;
+                    appState.expandedMembers[memberName] = !appState.expandedMembers[memberName];
+                    renderHome();
+                } else if (action === 'toggle-expand-all-members') {
+                    const allExpanded = FAMILY_MEMBERS.every(m => Boolean(appState.expandedMembers[m.name]));
+                    FAMILY_MEMBERS.forEach(m => {
+                        appState.expandedMembers[m.name] = !allExpanded;
+                    });
+                    renderHome();
+                } else if (action === 'copy-home-summary') {
+                    const text = buildHomeSummaryText();
+                    copyTextToClipboard(text);
+                    showToast('Summary copied to clipboard!');
+                } else if (action === 'whatsapp-home-summary') {
+                    const text = buildHomeSummaryText();
+                    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank', 'noopener');
+                } else if (action === 'open-recent-day' || action === 'edit-history-entry') {
+                    setSelectedDate(btn.dataset.date);
+                    switchTab('entry');
+                } else if (action === 'save-bcl-shift') {
+                    handleSaveBclShift(btn.dataset.member);
+                } else if (action === 'save-dollar-stream') {
+                    handleSaveDollarStream(btn.dataset.member, btn.dataset.stream, btn.dataset.input);
+                } else if (action === 'quick-fill') {
+                    const inp = document.getElementById(btn.dataset.input);
+                    if (inp) {
+                        inp.value = btn.dataset.val;
+                        appState.hasUnsavedEdits = true;
+                        updateHeaderSaveBadge();
+                        renderEntryLiveTotals();
+                    }
+                } else if (action === 'save-and-complete-day') {
+                    handleSaveAndCompleteDay();
+                } else if (action === 'unsaved-save-and-proceed') {
+                    const nextFn = appState.pendingActionAfterUnsaved;
+                    flushVisibleDailyInputsToState(true);
+                    saveToStorage(true);
+                    hideUnsavedBanner();
+                    showToast('Changes Saved ✓');
+                    if (typeof nextFn === 'function') nextFn();
+                } else if (action === 'unsaved-discard-and-proceed') {
+                    const nextFn = appState.pendingActionAfterUnsaved;
+                    appState.hasUnsavedEdits = false;
+                    updateHeaderSaveBadge();
+                    hideUnsavedBanner();
+                    if (typeof nextFn === 'function') nextFn();
+                } else if (action === 'unsaved-cancel') {
+                    hideUnsavedBanner();
+                } else if (action === 'delete-history-entry') {
+                    const key = btn.dataset.key;
+                    if (appState.pendingDeleteKey === key) {
+                        delete appState.entries[key];
+                        appState.pendingDeleteKey = null;
+                        saveToStorage(true);
+                        renderAll();
+                        showToast('Entry deleted');
+                    } else {
+                        appState.pendingDeleteKey = key;
+                        renderHistory();
+                    }
+                } else if (action === 'sync-lyft-seed') {
+                    const count = seedImportedRecords(true);
+                    renderAll();
+                    showToast(`Restored & locked ${count} pre-seeded records ✓`);
+                } else if (action === 'reset-all-two-tap') {
+                    if (appState.pendingResetConfirm) {
+                        appState.entries = {};
+                        appState.completedDates = {};
+                        appState.pendingResetConfirm = false;
+                        seedImportedRecords(true);
+                        renderAll();
+                        showToast('Reset to clean pre-seeded data ✓');
+                    } else {
+                        appState.pendingResetConfirm = true;
+                        renderHome();
+                    }
+                } else if (action === 'export-csv') {
+                    const monthFilter = document.getElementById('historyMonthFilter')?.value || '';
+                    const memberFilter = document.getElementById('historyMemberFilter')?.value || 'All';
+                    const rows = getAllEntriesArray()
+                        .filter(entry => !monthFilter || entry.date.startsWith(monthFilter))
+                        .filter(entry => memberFilter === 'All' || entry.member === memberFilter)
+                        .sort((a, b) => a.date.localeCompare(b.date));
+
+                    const csvLines = ['Date,Member,Stream,Hours,Rate,Amount,Note'];
+                    rows.forEach(r => {
+                        csvLines.push([
+                            r.date,
+                            `"${r.member}"`,
+                            `"${r.stream}"`,
+                            r.hours ?? '',
+                            r.rate ?? '',
+                            r.amount.toFixed(2),
+                            `"${(r.note || '').replace(/"/g, '""')}"`
+                        ].join(','));
+                    });
+
+                    const blob = new Blob([csvLines.join('\n')], { type: 'text/csv;charset=utf-8;' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `family-income-${monthFilter || 'all'}.csv`;
+                    a.click();
+                    URL.revokeObjectURL(url);
+                    showToast('CSV exported!');
+                } else if (action === 'share-whatsapp') {
+                    const text = buildHomeSummaryText();
+                    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank', 'noopener');
+                } else if (action === 'hide-toast') {
+                    document.getElementById('toastBanner')?.classList.add('hidden');
+                }
+            });
+
+            document.addEventListener('input', (e) => {
+                const role = e.target.dataset.role;
+                if (role === 'bcl-calc') {
+                    appState.hasUnsavedEdits = true;
+                    updateHeaderSaveBadge();
+                    updateBclReadout(e.target.dataset.member);
+                    renderEntryLiveTotals();
+                } else if (role === 'dollar-input') {
+                    appState.hasUnsavedEdits = true;
+                    updateHeaderSaveBadge();
+                    renderEntryLiveTotals();
+                }
+            });
+
+            document.addEventListener('change', (e) => {
+                const role = e.target.dataset.role;
+                if (role === 'date-picker') {
+                    if (e.target.value) setSelectedDate(e.target.value);
+                } else if (role === 'off-schedule-toggle') {
+                    appState.showOffSchedule = Boolean(e.target.checked);
+                    renderDailyEntry();
+                } else if (role === 'history-filter') {
+                    appState.pendingDeleteKey = null;
+                    renderHistory();
+                }
+            });
+
+            // -----------------------------------------------------------------
+            // INITIALIZE
+            // -----------------------------------------------------------------
+            buildAdityaDollarRows();
+            loadFromStorage();
+            seedImportedRecords(false);
+            setSelectedDate(getTodayISO());
+        })();
+    </script>
+
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function () {
+                navigator.serviceWorker.register('sw.js');
+            });
+        }
+    </script>
+</body>
+</html>
