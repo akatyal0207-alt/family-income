@@ -297,16 +297,25 @@
                         </div>
                     </div>
 
-                    <!-- Period Grand Total & Edit Button -->
-                    <div class="flex items-center justify-between lg:justify-end gap-4 bg-slate-50 lg:bg-transparent p-3.5 lg:p-0 rounded-xl border lg:border-0 border-slate-200 shrink-0">
-                        <div class="lg:text-right">
-                            <span id="homePeriodTotalLabel" class="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">Selected Day Total</span>
-                            <span id="homeSelectedDayGrandTotal" class="text-2xl sm:text-3xl font-extrabold text-emerald-600">$0.00</span>
+                    <!-- Period Grand Total & Edit Button + Averages Strip -->
+                    <div class="flex flex-col gap-2 shrink-0 min-w-0 lg:w-[24rem]">
+                        <!-- Period Grand Total & Edit Button -->
+                        <div class="flex items-center justify-between lg:justify-end gap-4 bg-slate-50 lg:bg-transparent p-3.5 lg:p-0 rounded-xl border lg:border-0 border-slate-200 shrink-0">
+                            <div class="lg:text-right">
+                                <span id="homePeriodTotalLabel" class="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">Selected Day Total</span>
+                                <span id="homeSelectedDayGrandTotal" class="text-2xl sm:text-3xl font-extrabold text-emerald-600">$0.00</span>
+                            </div>
+                            <button type="button" data-action="open-daily-entry-selected"
+                                class="px-4 py-3 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs sm:text-sm font-extrabold shadow-sm transition shrink-0">
+                                Edit / Log Day →
+                            </button>
                         </div>
-                        <button type="button" data-action="open-daily-entry-selected"
-                            class="px-4 py-3 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs sm:text-sm font-extrabold shadow-sm transition shrink-0">
-                            Edit / Log Day →
-                        </button>
+
+                        <!-- Averages / Pace Strip (adapts to Day | Week | Month | Year | Custom) -->
+                        <div id="homeAvgStrip" class="space-y-1.5">
+                            <div id="homeAvgGrid" class="grid grid-cols-3 gap-1.5 sm:gap-2"></div>
+                            <p id="homeAvgNote" class="text-[10px] font-semibold text-slate-500 leading-snug"></p>
+                        </div>
                     </div>
                 </div>
 
@@ -1762,6 +1771,69 @@
                 renderHome();
             }
 
+
+            // -----------------------------------------------------------------
+            // HOME AVERAGES / PACE STRIP
+            // -----------------------------------------------------------------
+            function computeHomeAverages(info, total) {
+                const todayISO = getTodayISO();
+                const fullDays = info.dates.length;
+                const elapsedDays = info.dates.filter(d => d <= todayISO).length;
+                const inProgress = info.endISO > todayISO && info.startISO <= todayISO;
+                const notStarted = info.startISO > todayISO;
+                const divisorDays = inProgress ? elapsedDays : fullDays;
+                const anchor = parseLocalDate(info.dateISO);
+                const daysInMonth = new Date(anchor.getFullYear(), anchor.getMonth() + 1, 0).getDate();
+                const yearOf = parseLocalDate(info.startISO).getFullYear();
+                const daysInYear = new Date(yearOf, 1, 29).getMonth() === 1 ? 366 : 365;
+                const avgDay = divisorDays > 0 ? total / divisorDays : 0;
+                const chip = (label, value, projection) => ({ label, value, projection: Boolean(projection) });
+                let chips;
+                let note;
+                if (info.mode === 'daily') {
+                    chips = [
+                        chip('Weekly pace', total * 7, true),
+                        chip('Monthly pace', total * daysInMonth, true),
+                        chip('Yearly pace', total * 365, true)
+                    ];
+                    note = `Projection: if every day earned like this one (×7, ×${daysInMonth} days, ×365).`;
+                } else {
+                    if (info.mode === 'weekly') {
+                        chips = [chip('Avg / day', avgDay), chip('Monthly pace', avgDay * daysInMonth, true), chip('Yearly pace', avgDay * 365, true)];
+                    } else if (info.mode === 'monthly') {
+                        chips = [chip('Avg / day', avgDay), chip('Avg / week', avgDay * 7), chip('Yearly pace', avgDay * 365, true)];
+                    } else if (info.mode === 'yearly') {
+                        chips = [chip('Avg / month', avgDay * daysInYear / 12), chip('Avg / week', avgDay * 7), chip('Avg / day', avgDay)];
+                    } else {
+                        chips = [chip('Avg / day', avgDay), chip('Avg / week', avgDay * 7), chip('Avg / month', avgDay * 30.44)];
+                    }
+                    if (notStarted) {
+                        note = 'This period hasn\'t started yet — averages appear once days pass.';
+                    } else if (inProgress) {
+                        note = `Based on ${elapsedDays} of ${fullDays} days so far (calendar days up to today).`;
+                    } else {
+                        note = `Based on all ${fullDays} calendar day${fullDays === 1 ? '' : 's'}${info.mode === 'custom' ? ' • month = 30.44 days' : ''}.`;
+                    }
+                    if (info.mode === 'custom' && !notStarted && inProgress) note += ' Month = 30.44 days.';
+                    if (chips.some(c => c.projection)) note += ' “Pace” = projection at this rate.';
+                }
+                return { chips, note, divisorDays, fullDays, elapsedDays, inProgress, notStarted, avgDay };
+            }
+
+            function renderHomeAverages(info, total) {
+                const grid = document.getElementById('homeAvgGrid');
+                const noteEl = document.getElementById('homeAvgNote');
+                if (!grid || !noteEl) return;
+                const avg = computeHomeAverages(info, total);
+                grid.innerHTML = avg.chips.map(c => `
+                    <div class="min-w-0 rounded-xl ${c.projection ? 'bg-indigo-50/70 border border-indigo-200/80' : 'bg-white border border-slate-200'} px-2 py-1.5" data-avg-label="${escapeHTML(c.label)}">
+                        <span class="block text-[9px] sm:text-[10px] font-extrabold uppercase tracking-wide ${c.projection ? 'text-indigo-500' : 'text-slate-400'} truncate">${escapeHTML(c.label)}</span>
+                        <span class="block text-[12px] sm:text-sm font-extrabold ${c.projection ? 'text-indigo-900' : 'text-slate-900'} tracking-tight truncate" data-avg-value>${avg.notStarted ? '—' : formatMoney(c.value)}</span>
+                    </div>
+                `).join('');
+                noteEl.textContent = avg.note;
+            }
+
             function buildHomeSummaryText() {
                 const info = getHomePeriodInfo();
                 const isDaily = info.mode === 'daily';
@@ -1873,6 +1945,7 @@
 
                 document.getElementById('homePeriodTotalLabel').textContent = info.totalLabel;
                 document.getElementById('homeSelectedDayGrandTotal').textContent = formatMoney(periodGrandTotal);
+                renderHomeAverages(info, periodGrandTotal);
 
                 const isBclFri = isBiWeeklyBclPayday(dateISO);
                 const isThu = isThursday(dateISO);
