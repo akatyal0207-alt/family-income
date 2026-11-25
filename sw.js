@@ -1,4 +1,4 @@
-const CACHE = "family-income-v-20261124d";
+const CACHE = "family-income-v-20261124e";
 const PRECACHE = /*PRECACHE_START*/["./","apple-touch-icon.png","favicon-16.png","favicon-32.png","favicon.ico","icon-192.png","icon-512.png","maskable-192.png","maskable-512.png","index.html","logo.svg","manifest.webmanifest"]/*PRECACHE_END*/;
 
 const EXTRA_URLS = [
@@ -42,6 +42,8 @@ self.addEventListener("fetch", (event) => {
   const request = event.request;
   if (request.method !== "GET") return;
   const url = new URL(request.url);
+  // Never cache the cloud-sync backend (Apps Script and its redirect host).
+  if (/(^|\.)script\.google\.com$|(^|\.)googleusercontent\.com$/.test(url.hostname)) return;
   const sameOrigin = url.origin === self.location.origin;
   if (!sameOrigin && !RUNTIME_HOSTS.has(url.hostname)) return;
 

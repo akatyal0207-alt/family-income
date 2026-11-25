@@ -54,6 +54,10 @@
                         <span id="headerSaveStatusBadge" class="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-400/30 text-[10px] sm:text-[11px] font-extrabold">
                             All Saved ✓
                         </span>
+                        <button type="button" id="syncStatusChip" data-action="sync-open" data-status="off" aria-label="Cloud sync status"
+                            class="px-2 py-0.5 rounded-full border text-[10px] sm:text-[11px] font-extrabold whitespace-nowrap bg-white/10 text-slate-300 border-white/20">
+                            ☁ Sync off
+                        </button>
                     </div>
                     <p id="headerTodaySubtext" class="text-[11px] sm:text-xs text-slate-400 font-medium truncate">5-Member Tracker • Locked Backup Active</p>
                 </div>
@@ -820,6 +824,53 @@
     </main>
 
     <!-- ===================================================================== -->
+    <!-- CLOUD SYNC PANEL (opened from the ☁ chip in the header)               -->
+    <!-- ===================================================================== -->
+    <div id="syncPanel" class="hidden fixed inset-0 z-50 bg-slate-950/60 flex items-end sm:items-center justify-center p-3" role="dialog" aria-modal="true" aria-labelledby="syncPanelTitle">
+        <div class="w-full max-w-md bg-white rounded-2xl shadow-xl border border-slate-200 p-5 space-y-3 max-h-[90vh] overflow-y-auto">
+            <div class="flex items-start justify-between gap-3">
+                <div>
+                    <h2 id="syncPanelTitle" class="text-base font-extrabold text-slate-900">☁ Cloud Sync — all your devices</h2>
+                    <p class="text-xs text-slate-500">Keeps phone and laptop in step automatically through your private Google Sheet. Data on this device is never wiped.</p>
+                </div>
+                <button type="button" data-action="sync-close" aria-label="Close" class="w-8 h-8 shrink-0 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-extrabold">✕</button>
+            </div>
+            <p id="syncPanelStatus" class="text-xs font-semibold rounded-xl px-3 py-2 border bg-slate-50 text-slate-700 border-slate-200">Not connected.</p>
+
+            <div class="space-y-1.5">
+                <label for="syncSetupCodeInput" class="text-[11px] font-extrabold uppercase tracking-wider text-slate-500 block">Paste setup link</label>
+                <div class="flex gap-2">
+                    <input type="text" id="syncSetupCodeInput" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="https://…/family-income/#sync=…"
+                        class="flex-1 min-w-0 px-3 py-2 rounded-xl border border-slate-300 bg-slate-50 text-xs font-semibold text-slate-900">
+                    <button type="button" data-action="sync-connect-code" class="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-extrabold shrink-0">Connect</button>
+                </div>
+            </div>
+
+            <details class="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2">
+                <summary class="text-xs font-extrabold text-slate-700 cursor-pointer">Or enter Sync URL + Sync Key</summary>
+                <div class="space-y-2 pt-2">
+                    <input type="url" id="syncUrlInput" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="https://script.google.com/macros/s/…/exec"
+                        class="w-full px-3 py-2 rounded-xl border border-slate-300 bg-white text-xs font-semibold text-slate-900">
+                    <div class="flex gap-2">
+                        <input type="password" id="syncKeyInput" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Sync Key"
+                            class="flex-1 min-w-0 px-3 py-2 rounded-xl border border-slate-300 bg-white text-xs font-semibold text-slate-900">
+                        <button type="button" data-action="sync-toggle-key" class="px-3 py-2 rounded-xl bg-white border border-slate-300 text-xs font-extrabold text-slate-700 shrink-0">Show</button>
+                    </div>
+                    <button type="button" data-action="sync-save-fields" class="w-full px-3.5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-extrabold">Save &amp; Connect</button>
+                </div>
+            </details>
+
+            <div id="syncConnectedActions" class="hidden grid grid-cols-2 gap-2">
+                <button type="button" id="syncNowBtn" data-action="sync-now" class="px-3 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-extrabold">Sync now</button>
+                <button type="button" data-action="sync-copy-link" class="px-3 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-900 text-xs font-extrabold">Copy setup link</button>
+                <button type="button" data-action="sync-disconnect" class="col-span-2 px-3 py-2 rounded-xl bg-white hover:bg-rose-50 border border-rose-200 text-rose-700 text-[11px] font-extrabold">Disconnect this device</button>
+            </div>
+            <p id="syncPanelDevice" class="text-[10px] text-slate-400"></p>
+            <p class="text-[10px] text-slate-500 leading-snug">iPhone tip: an app added to the Home Screen has its own storage, so open this panel inside the installed app and paste the setup link here.</p>
+        </div>
+    </div>
+
+    <!-- ===================================================================== -->
     <!-- TOAST NOTIFICATION                                                    -->
     <!-- ===================================================================== -->
     <div id="toastBanner" class="hidden fixed bottom-6 right-4 left-4 sm:left-auto sm:w-96 z-50 bg-slate-900 text-white px-4 py-3.5 rounded-2xl shadow-xl border border-slate-700 flex items-center justify-between">
@@ -1211,6 +1262,7 @@
                     }
                     appState.hasUnsavedEdits = false;
                     updateHeaderSaveBadge();
+                    syncNotifyLocalSave();
                 } catch (err) {
                     console.warn('Could not persist state to localStorage:', err);
                 }
@@ -3510,12 +3562,496 @@
 
 
             // -----------------------------------------------------------------
+            // CLOUD SYNC (Google Apps Script web app) — zero external libraries
+            // Separate localStorage keys; the data keys/structure are untouched.
+            // -----------------------------------------------------------------
+            const SYNC_CONFIG_KEY = 'family_income_sync_config_v1';
+            const SYNC_BASE_KEY = 'family_income_sync_base_v1';
+            const SYNC_META_KEY = 'family_income_sync_meta_v1';
+            const SYNC_DEBOUNCE_MS = 2000;
+            const SYNC_FOCUS_MIN_GAP_MS = 10000;
+            const SYNC_POLL_MS = 60000;
+            const SYNC_TIMEOUT_MS = 25000;
+
+            const syncState = {
+                status: 'off', detail: '', inFlight: false, again: false,
+                debounceTimer: null, retryTimer: null, retryDelay: 5000,
+                applying: false, lastAttemptAt: 0, pollTimer: null
+            };
+
+            const SYNC_SEED_INDEX = (() => {
+                const idx = {};
+                [...IMPORTED_LYFT_RECORDS, ...IMPORTED_UBER_RECORDS, ...IMPORTED_ADITYA_MANUAL_RECORDS, ...IMPORTED_NEHA_RECORDS]
+                    .forEach(r => { idx[makeCanonicalKey(r.date, r.member, r.stream)] = r; });
+                return idx;
+            })();
+
+            function syncLoadJSON(k, fallback) {
+                try { const v = JSON.parse(localStorage.getItem(k)); return v === null || v === undefined ? fallback : v; } catch (e) { return fallback; }
+            }
+            function syncSaveJSON(k, v) {
+                try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) { console.warn('Sync: could not store', k, e); }
+            }
+            function syncGetConfig() {
+                const c = syncLoadJSON(SYNC_CONFIG_KEY, null);
+                return c && typeof c.url === 'string' && c.url && typeof c.key === 'string' && c.key ? c : null;
+            }
+            function syncGetMeta() {
+                const m = syncLoadJSON(SYNC_META_KEY, {}) || {};
+                if (!m.deviceId) {
+                    const ua = navigator.userAgent || '';
+                    const kind = /iPhone/.test(ua) ? 'iPhone' : /iPad/.test(ua) ? 'iPad' : /Android/.test(ua) ? 'Android' : /Mac/.test(ua) ? 'Mac' : /Windows/.test(ua) ? 'Windows' : 'Device';
+                    m.deviceId = `${kind}-${Math.random().toString(36).slice(2, 8)}`;
+                    syncSaveJSON(SYNC_META_KEY, m);
+                }
+                return m;
+            }
+            function syncSetMeta(patch) {
+                const m = Object.assign(syncGetMeta(), patch);
+                syncSaveJSON(SYNC_META_KEY, m);
+                return m;
+            }
+
+            // ---------------- merge ----------------
+            function syncTs(e) { return (e && Date.parse(e.updatedAt)) || 0; }
+            function syncHasValue(e) { return Boolean(e) && ((Number(e.amount) || 0) > 0 || (Number(e.hours) || 0) > 0); }
+            function syncSig(e) {
+                if (!e) return '∅';
+                return JSON.stringify([
+                    Math.round((Number(e.amount) || 0) * 100),
+                    typeof e.hours === 'number' ? e.hours : null,
+                    typeof e.rate === 'number' ? e.rate : null,
+                    Boolean(e.isHourly),
+                    e.note || ''
+                ]);
+            }
+            function syncIsPristineSeed(key, e) {
+                const r = SYNC_SEED_INDEX[key];
+                if (!r || !e) return false;
+                return Math.abs((Number(e.amount) || 0) - r.amount) < 0.005 && (e.note || '') === (r.note || '') && (Number(e.hours) || 0) === (Number(r.hours) || 0);
+            }
+            // Non-destructive pick between two differing versions of one entry
+            function syncPick(key, a, b, isTrueConflict) {
+                if (!a) return b;
+                if (!b) return a;
+                if (syncSig(a) === syncSig(b)) return syncTs(b) > syncTs(a) ? b : a;
+                const pa = syncIsPristineSeed(key, a);
+                const pb = syncIsPristineSeed(key, b);
+                if (pa && !pb) return b;
+                if (pb && !pa) return a;
+                const va = syncHasValue(a);
+                const vb = syncHasValue(b);
+                // An empty/zero value never beats a real value when both sides changed (or on first contact).
+                if (va && !vb) return a;
+                if (vb && !va) return b;
+                const ta = syncTs(a);
+                const tb = syncTs(b);
+                if (isTrueConflict && ta && tb) return tb > ta ? b : a; // true conflict: newer wins
+                if (ta || tb) return tb > ta ? b : a;                     // legacy entry without timestamp loses to a timestamped one
+                return a;
+            }
+            function syncCountMeaningful(entries) {
+                return Object.keys(entries || {}).filter(k => syncHasValue(entries[k]) && !syncIsPristineSeed(k, entries[k])).length;
+            }
+
+            function syncMerge(local, base, remote) {
+                const L = (local && local.entries) || {};
+                const R = (remote && remote.entries) || {};
+                const B = base ? (base.entries || {}) : null;
+                const out = {};
+                const report = { localDeletes: [], remoteDeletes: [], conflicts: 0, guarded: false };
+                const keys = new Set([...Object.keys(L), ...Object.keys(R), ...(B ? Object.keys(B) : [])]);
+                keys.forEach(k => {
+                    const l = L[k], r = R[k];
+                    if (!B) { const w = syncPick(k, l, r, false); if (w) out[k] = w; return; }
+                    const b = B[k];
+                    const ls = syncSig(l), rs = syncSig(r), bs = syncSig(b);
+                    let w;
+                    if (ls === rs) w = syncPick(k, l, r, false);
+                    else if (ls === bs) { w = r; if (!r && l) report.remoteDeletes.push(k); }
+                    else if (rs === bs) { w = l; if (!l && r) report.localDeletes.push(k); }
+                    else { report.conflicts++; w = !l ? r : !r ? l : syncPick(k, l, r, true); }
+                    if (w) out[k] = w;
+                });
+                // Mass-deletion guard: a big wipe (e.g. "Reset to Seed Data" on one device) never propagates silently.
+                const guard = (list, source) => {
+                    const meaningfulDeleted = list.filter(k => syncHasValue(source[k]) && !syncIsPristineSeed(k, source[k])).length;
+                    const total = syncCountMeaningful(source);
+                    if (meaningfulDeleted >= 10 && meaningfulDeleted > total * 0.3) {
+                        list.forEach(k => { out[k] = source[k]; });
+                        report.guarded = true;
+                    }
+                };
+                guard(report.localDeletes, R);
+                guard(report.remoteDeletes, L);
+
+                const completedDates = Object.assign({}, (remote && remote.completedDates) || {});
+                Object.entries((local && local.completedDates) || {}).forEach(([d, v]) => {
+                    const cur = completedDates[d];
+                    if (!cur || (Date.parse(v && v.completedAt) || 0) > (Date.parse(cur && cur.completedAt) || 0)) completedDates[d] = v;
+                });
+
+                const lr = (local && local.rates) || {};
+                const rr = (remote && remote.rates) || null;
+                const ltsR = (local && local.ratesUpdatedAt) || 0;
+                const rtsR = (remote && remote.ratesUpdatedAt) || 0;
+                let rates, ratesUpdatedAt;
+                if (!rr) { rates = lr; ratesUpdatedAt = ltsR; }
+                else if (base && JSON.stringify(lr) === JSON.stringify(base.rates || {})) { rates = rr; ratesUpdatedAt = rtsR; }
+                else if (base && JSON.stringify(rr) === JSON.stringify(base.rates || {})) { rates = lr; ratesUpdatedAt = ltsR; }
+                else if (rtsR > ltsR) { rates = rr; ratesUpdatedAt = rtsR; }
+                else if (ltsR > rtsR) { rates = lr; ratesUpdatedAt = ltsR; }
+                else {
+                    // Tie with no timestamps (first contact): a customised rate beats the app default ($26)
+                    rates = Object.assign({}, rr, lr);
+                    Object.keys(rr).forEach(n => {
+                        const lv = Number(lr[n]), rv = Number(rr[n]);
+                        if (!(lv > 0) || (lv === 26 && rv > 0 && rv !== 26)) rates[n] = rv;
+                    });
+                    ratesUpdatedAt = ltsR;
+                }
+
+                return { state: { version: 1, rates: Object.assign({}, rates), ratesUpdatedAt, entries: out, completedDates }, report };
+            }
+
+            function syncCanon(s) {
+                if (!s) return 'null';
+                const e = s.entries || {};
+                const c = s.completedDates || {};
+                return JSON.stringify([
+                    Object.keys(e).sort().map(k => [k, syncSig(e[k])]),
+                    Object.keys(c).sort(),
+                    s.rates || {}
+                ]);
+            }
+
+            function syncLocalSnapshot() {
+                const meta = syncGetMeta();
+                return {
+                    version: 1,
+                    rates: Object.assign({}, appState.rates),
+                    ratesUpdatedAt: meta.ratesUpdatedAt || 0,
+                    entries: appState.entries,
+                    completedDates: appState.completedDates
+                };
+            }
+
+            function syncApplyMerged(m) {
+                appState.entries = JSON.parse(JSON.stringify(m.entries));
+                appState.completedDates = JSON.parse(JSON.stringify(m.completedDates));
+                if (m.rates && typeof m.rates === 'object') {
+                    ['Aditya', 'Neha'].forEach(n => { if (typeof m.rates[n] === 'number' && m.rates[n] > 0) appState.rates[n] = m.rates[n]; });
+                }
+                syncSetMeta({ ratesUpdatedAt: m.ratesUpdatedAt || 0, lastRatesJSON: JSON.stringify(appState.rates) });
+                // Same payload/keys as saveToStorage(), written without touching the unsaved-edits flag
+                try {
+                    const payload = JSON.stringify({ rates: appState.rates, entries: appState.entries, completedDates: appState.completedDates, lastSavedAt: new Date().toISOString() });
+                    localStorage.setItem(STORAGE_KEY, payload);
+                    localStorage.setItem(BACKUP_STORAGE_KEY, payload);
+                } catch (err) {
+                    console.warn('Sync: could not persist merged state', err);
+                }
+                renderAll();
+                if (appState.activeTab === 'entry' && !appState.hasUnsavedEdits) prefillInputsForDate(appState.selectedDate);
+            }
+
+            // ---------------- network ----------------
+            function SyncError(kind, message) { this.kind = kind; this.message = message; }
+            async function syncRequest(cfg, body) {
+                const ctrl = typeof AbortController !== 'undefined' ? new AbortController() : null;
+                const t = setTimeout(() => ctrl && ctrl.abort(), SYNC_TIMEOUT_MS);
+                let res;
+                try {
+                    res = await fetch(cfg.url, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                        body: JSON.stringify(Object.assign({}, body, { key: cfg.key })),
+                        redirect: 'follow',
+                        cache: 'no-store',
+                        credentials: 'omit',
+                        signal: ctrl ? ctrl.signal : undefined
+                    });
+                } catch (err) {
+                    throw new SyncError('offline', 'No connection');
+                } finally {
+                    clearTimeout(t);
+                }
+                const text = await res.text();
+                let data;
+                try { data = JSON.parse(text); } catch (e) {
+                    throw new SyncError('error', 'Unexpected reply — check the Sync URL (must be the /exec web-app link with access “Anyone”).');
+                }
+                if (data && data.ok === false && data.error === 'unauthorized') throw new SyncError('error', 'Wrong Sync Key.');
+                if (data && data.ok === false && data.error !== 'conflict' && !/refusing/.test(data.error || '')) throw new SyncError('error', `Server: ${data.error}`);
+                return data;
+            }
+
+            async function syncNow(reason) {
+                const cfg = syncGetConfig();
+                if (!cfg) { syncSetStatus('off'); return; }
+                if (syncState.inFlight) { syncState.again = true; return; }
+                syncState.inFlight = true;
+                syncState.lastAttemptAt = Date.now();
+                clearTimeout(syncState.retryTimer);
+                syncSetStatus('syncing');
+                const meta = syncGetMeta();
+                try {
+                    let done = false;
+                    for (let attempt = 0; attempt < 4 && !done; attempt++) {
+                        const remote = await syncRequest(cfg, { action: 'get' });
+                        const rState = remote.state && typeof remote.state === 'object' && remote.state.entries ? remote.state : null;
+                        const baseRec = syncLoadJSON(SYNC_BASE_KEY, null);
+                        const base = baseRec && baseRec.url === cfg.url ? baseRec.state : null;
+                        const local = syncLocalSnapshot();
+                        const { state: merged, report } = syncMerge(local, base, rState);
+                        if (syncCanon(merged) !== syncCanon(local)) syncApplyMerged(merged);
+                        if (report.guarded) syncState.detail = 'A large deletion was not synced (kept data safe). Use the History sheet to restore/remove if intended.';
+                        if (rState && syncCanon(merged) === syncCanon(rState)) {
+                            syncSaveJSON(SYNC_BASE_KEY, { url: cfg.url, rev: remote.rev, state: merged });
+                            done = true;
+                            break;
+                        }
+                        if (rState && Object.keys(merged.entries).length === 0 && Object.keys(rState.entries).length > 0) {
+                            done = true; // never overwrite a non-empty side with an empty one
+                            break;
+                        }
+                        const put = await syncRequest(cfg, { action: 'put', baseRev: remote.rev, state: Object.assign({}, merged, { savedBy: meta.deviceId, savedAt: new Date().toISOString() }), device: meta.deviceId });
+                        if (put && put.ok) {
+                            syncSaveJSON(SYNC_BASE_KEY, { url: cfg.url, rev: put.rev, state: merged });
+                            done = true;
+                        } else if (put && put.error === 'conflict') {
+                            continue; // someone else saved in between: pull, merge, retry
+                        } else {
+                            throw new SyncError('error', (put && put.error) || 'Upload refused');
+                        }
+                    }
+                    if (!done) throw new SyncError('error', 'Busy — will retry');
+                    syncSetMeta({ lastSyncAt: new Date().toISOString(), pending: false });
+                    syncState.retryDelay = 5000;
+                    syncSetStatus('ok');
+                } catch (err) {
+                    const kind = err && err.kind ? err.kind : 'error';
+                    if (!(err && err.kind)) console.warn('Sync failed:', err);
+                    syncSetMeta({ pending: true });
+                    syncSetStatus(kind === 'offline' || (typeof navigator !== 'undefined' && navigator.onLine === false) ? 'offline' : 'error', err && err.message);
+                    const delay = syncState.retryDelay;
+                    syncState.retryDelay = Math.min(syncState.retryDelay * 2, 5 * 60000);
+                    syncState.retryTimer = setTimeout(() => syncNow('retry'), delay);
+                } finally {
+                    syncState.inFlight = false;
+                    if (syncState.again) {
+                        syncState.again = false;
+                        syncSchedule(300);
+                    }
+                }
+            }
+
+            function syncSchedule(ms) {
+                if (!syncGetConfig()) return;
+                clearTimeout(syncState.debounceTimer);
+                syncState.debounceTimer = setTimeout(() => syncNow('save'), ms);
+            }
+
+            // Called from saveToStorage() — covers manual saves, Save All Data and the Voice Assistant
+            function syncNotifyLocalSave() {
+                if (syncState.applying) return;
+                const meta = syncGetMeta();
+                const ratesJSON = JSON.stringify(appState.rates);
+                if (meta.lastRatesJSON === undefined) syncSetMeta({ lastRatesJSON: ratesJSON });
+                else if (meta.lastRatesJSON !== ratesJSON) syncSetMeta({ lastRatesJSON: ratesJSON, ratesUpdatedAt: Date.now() });
+                if (!syncGetConfig()) return;
+                syncSetMeta({ pending: true });
+                if (!syncState.inFlight) syncSetStatus('pending');
+                syncSchedule(SYNC_DEBOUNCE_MS);
+            }
+
+            // ---------------- status UI ----------------
+            function syncFormatTime(iso) {
+                if (!iso) return 'never';
+                const d = new Date(iso);
+                const sameDay = toLocalISO(d) === getTodayISO();
+                return sameDay
+                    ? d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
+                    : d.toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+            }
+
+            function syncSetStatus(status, detail) {
+                syncState.status = status;
+                if (detail !== undefined) syncState.detail = detail || '';
+                else if (status === 'ok' || status === 'syncing' || status === 'pending') { /* keep guard message if any */ }
+                const meta = syncGetMeta();
+                const chip = document.getElementById('syncStatusChip');
+                const styles = {
+                    off: ['bg-white/10 text-slate-300 border-white/20', '☁ Sync off'],
+                    pending: ['bg-sky-500/20 text-sky-200 border-sky-400/40', '☁ Saving…'],
+                    syncing: ['bg-sky-500/20 text-sky-200 border-sky-400/40', '☁ Syncing…'],
+                    ok: ['bg-emerald-500/20 text-emerald-300 border-emerald-400/30', '☁ Synced'],
+                    offline: ['bg-amber-500/20 text-amber-200 border-amber-400/40', '☁ Offline'],
+                    error: ['bg-rose-500/25 text-rose-200 border-rose-400/50', '☁ Sync error']
+                };
+                const [cls, label] = styles[status] || styles.off;
+                if (chip) {
+                    chip.className = `px-2 py-0.5 rounded-full border text-[10px] sm:text-[11px] font-extrabold whitespace-nowrap ${cls}`;
+                    chip.textContent = label;
+                    chip.title = status === 'ok' ? `Last synced ${syncFormatTime(meta.lastSyncAt)}` : (syncState.detail || label);
+                    chip.dataset.status = status;
+                }
+                const st = document.getElementById('syncPanelStatus');
+                if (st) {
+                    const cfg = syncGetConfig();
+                    const lines = {
+                        off: 'Not connected. Paste the setup link (or URL + key) below.',
+                        pending: 'Change saved on this device — uploading shortly…',
+                        syncing: 'Syncing with the cloud…',
+                        ok: `Synced ✓ Last sync ${syncFormatTime(meta.lastSyncAt)}.`,
+                        offline: `Offline — changes are kept on this device and will upload automatically. Last sync ${syncFormatTime(meta.lastSyncAt)}.`,
+                        error: `Sync error: ${syncState.detail || 'unknown'} Will retry automatically.`
+                    };
+                    st.textContent = cfg || status !== 'off' ? lines[status] : lines.off;
+                    if (syncState.detail && status === 'ok') st.textContent += ` ${syncState.detail}`;
+                    st.className = `text-xs font-semibold rounded-xl px-3 py-2 border ${status === 'ok' ? 'bg-emerald-50 text-emerald-900 border-emerald-200' : status === 'error' ? 'bg-rose-50 text-rose-900 border-rose-200' : status === 'offline' ? 'bg-amber-50 text-amber-900 border-amber-200' : 'bg-slate-50 text-slate-700 border-slate-200'}`;
+                }
+                const dev = document.getElementById('syncPanelDevice');
+                if (dev) dev.textContent = `This device: ${meta.deviceId}`;
+            }
+
+            // ---------------- setup link / config ----------------
+            function syncB64UrlEncode(str) {
+                return btoa(unescape(encodeURIComponent(str))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+            }
+            function syncB64Decode(str) {
+                let s = String(str || '').trim().replace(/-/g, '+').replace(/_/g, '/').replace(/\s+/g, '');
+                while (s.length % 4) s += '=';
+                return decodeURIComponent(escape(atob(s)));
+            }
+            function syncParseSetupCode(input) {
+                let raw = String(input || '').trim();
+                if (!raw) return null;
+                const m = raw.match(/#?sync=([^&\s]+)/);
+                if (m) raw = decodeURIComponent(m[1]);
+                let decoded;
+                try { decoded = syncB64Decode(raw); } catch (e) { return null; }
+                const bar = decoded.indexOf('|');
+                if (bar < 1) return null;
+                const url = decoded.slice(0, bar).trim();
+                const key = decoded.slice(bar + 1).trim();
+                if (!/^https:\/\/|^http:\/\/(localhost|127\.0\.0\.1)[:/]/.test(url) || key.length < 8) return null;
+                return { url, key };
+            }
+            function syncBuildSetupLink(cfg) {
+                const base = location.origin + location.pathname;
+                return `${base}#sync=${syncB64UrlEncode(`${cfg.url}|${cfg.key}`)}`;
+            }
+            function syncSaveConfig(cfg) {
+                const prev = syncGetConfig();
+                syncSaveJSON(SYNC_CONFIG_KEY, { url: cfg.url, key: cfg.key, savedAt: new Date().toISOString() });
+                if (prev && prev.url !== cfg.url) { try { localStorage.removeItem(SYNC_BASE_KEY); } catch (e) {} }
+                syncFillPanelFields();
+                syncStartPolling();
+            }
+            function syncConsumeHash() {
+                const h = location.hash || '';
+                if (h.indexOf('sync=') === -1) return false;
+                const cfg = syncParseSetupCode(h);
+                try { history.replaceState(null, '', location.pathname + location.search); } catch (e) { location.hash = ''; }
+                if (!cfg) { showToast('Sync setup link is invalid or incomplete.'); return false; }
+                syncSaveConfig(cfg);
+                showToast('Cloud sync connected ✓ Pulling your data…');
+                return true;
+            }
+            function syncFillPanelFields() {
+                const cfg = syncGetConfig();
+                const u = document.getElementById('syncUrlInput');
+                const k = document.getElementById('syncKeyInput');
+                if (u) u.value = cfg ? cfg.url : '';
+                if (k) k.value = cfg ? cfg.key : '';
+                const connected = Boolean(cfg);
+                document.getElementById('syncConnectedActions')?.classList.toggle('hidden', !connected);
+            }
+            function syncOpenPanel(open) {
+                const p = document.getElementById('syncPanel');
+                if (!p) return;
+                p.classList.toggle('hidden', !open);
+                if (open) { syncFillPanelFields(); syncSetStatus(syncState.status); }
+            }
+            function syncStartPolling() {
+                clearInterval(syncState.pollTimer);
+                syncState.pollTimer = setInterval(() => {
+                    if (document.visibilityState === 'visible' && syncGetConfig() && !syncState.inFlight) syncNow('poll');
+                }, SYNC_POLL_MS);
+            }
+
+            document.addEventListener('click', (e) => {
+                const btn = e.target.closest('[data-action]');
+                if (!btn) return;
+                const a = btn.dataset.action;
+                if (a === 'sync-open') syncOpenPanel(true);
+                else if (a === 'sync-close') syncOpenPanel(false);
+                else if (a === 'sync-now') { syncState.detail = ''; syncNow('manual'); }
+                else if (a === 'sync-connect-code') {
+                    const cfg = syncParseSetupCode(document.getElementById('syncSetupCodeInput')?.value);
+                    if (!cfg) { syncSetStatus('error', 'That setup link/code is not valid.'); return; }
+                    document.getElementById('syncSetupCodeInput').value = '';
+                    syncSaveConfig(cfg); syncState.detail = ''; syncNow('connect');
+                } else if (a === 'sync-save-fields') {
+                    const url = (document.getElementById('syncUrlInput')?.value || '').trim();
+                    const key = (document.getElementById('syncKeyInput')?.value || '').trim();
+                    if (!/^https:\/\/|^http:\/\/(localhost|127\.0\.0\.1)[:/]/.test(url) || key.length < 8) { syncSetStatus('error', 'Enter the full https://script.google.com/…/exec URL and the Sync Key.'); return; }
+                    syncSaveConfig({ url, key }); syncState.detail = ''; syncNow('connect');
+                } else if (a === 'sync-copy-link') {
+                    const cfg = syncGetConfig();
+                    if (!cfg) return;
+                    copyTextToClipboard(syncBuildSetupLink(cfg));
+                    showToast('Setup link copied — open it on the other device (or paste it into its Sync panel).');
+                } else if (a === 'sync-disconnect') {
+                    try { localStorage.removeItem(SYNC_CONFIG_KEY); localStorage.removeItem(SYNC_BASE_KEY); } catch (err) {}
+                    clearInterval(syncState.pollTimer); clearTimeout(syncState.retryTimer); clearTimeout(syncState.debounceTimer);
+                    syncFillPanelFields(); syncSetStatus('off', '');
+                    showToast('Sync disconnected on this device (data stays here).');
+                } else if (a === 'sync-toggle-key') {
+                    const k = document.getElementById('syncKeyInput');
+                    if (k) k.type = k.type === 'password' ? 'text' : 'password';
+                }
+            });
+
+            function syncInit() {
+                syncGetMeta();
+                if (syncGetMeta().lastRatesJSON === undefined) syncSetMeta({ lastRatesJSON: JSON.stringify(appState.rates) });
+                syncConsumeHash();
+                const cfg = syncGetConfig();
+                syncSetStatus(cfg ? (syncGetMeta().pending ? 'pending' : 'syncing') : 'off');
+                if (!cfg) return;
+                syncStartPolling();
+                syncNow('load');
+            }
+            const syncOnFocus = () => {
+                if (!syncGetConfig() || document.visibilityState === 'hidden') return;
+                if (Date.now() - syncState.lastAttemptAt < SYNC_FOCUS_MIN_GAP_MS) return;
+                syncNow('focus');
+            };
+            window.addEventListener('focus', syncOnFocus);
+            document.addEventListener('visibilitychange', syncOnFocus);
+            window.addEventListener('online', () => { if (syncGetConfig()) syncNow('online'); });
+            window.addEventListener('offline', () => { if (syncGetConfig()) syncSetStatus('offline'); });
+            window.addEventListener('hashchange', () => { if (syncConsumeHash()) syncNow('connect'); });
+
+            window.FamilySync = {
+                merge: (l, b, r) => syncMerge(l, b, r),
+                parseSetupCode: (s) => syncParseSetupCode(s),
+                buildSetupLink: (u, k) => syncBuildSetupLink({ url: u, key: k }),
+                status: () => ({ status: syncState.status, detail: syncState.detail, meta: syncGetMeta() }),
+                syncNow: () => syncNow('test')
+            };
+
+
+            // -----------------------------------------------------------------
             // INITIALIZE
             // -----------------------------------------------------------------
             buildAdityaDollarRows();
             loadFromStorage();
             seedImportedRecords(false);
             setSelectedDate(getTodayISO());
+            syncInit();
         })();
     </script>
 
