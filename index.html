@@ -198,16 +198,28 @@
             <!-- Selected Period Card -->
             <div class="bg-white rounded-2xl p-5 sm:p-6 border border-slate-200 shadow-sm space-y-4">
 
-                <!-- Segmented Toggle: Daily View vs This Week (Mon–Sun) -->
+                <!-- Segmented Period Toggle: Day | Week (Mon–Sun) | Month | Year | Custom -->
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4">
-                    <div class="grid grid-cols-2 bg-slate-100 p-1 rounded-xl gap-1 w-full sm:w-auto">
-                        <button type="button" id="btnHomeModeDaily" data-action="set-home-mode" data-mode="daily"
-                            class="px-4 py-2 rounded-lg text-xs font-extrabold bg-slate-900 text-white shadow-sm transition">
-                            Daily View
+                    <div id="homeModeToggle" role="group" aria-label="Home period" class="grid grid-cols-5 bg-slate-100 p-1 rounded-xl gap-1 w-full sm:w-auto sm:min-w-[22rem]">
+                        <button type="button" id="btnHomeModeDaily" data-action="set-home-mode" data-mode="daily" aria-pressed="true"
+                            class="px-2 py-2 rounded-lg text-xs font-extrabold bg-slate-900 text-white shadow-sm transition">
+                            Day
                         </button>
-                        <button type="button" id="btnHomeModeWeekly" data-action="set-home-mode" data-mode="weekly"
-                            class="px-4 py-2 rounded-lg text-xs font-bold text-slate-600 hover:text-slate-900 transition">
-                            This Week (Mon–Sun)
+                        <button type="button" id="btnHomeModeWeekly" data-action="set-home-mode" data-mode="weekly" aria-pressed="false"
+                            class="px-2 py-2 rounded-lg text-xs font-bold text-slate-600 hover:text-slate-900 transition">
+                            Week
+                        </button>
+                        <button type="button" id="btnHomeModeMonthly" data-action="set-home-mode" data-mode="monthly" aria-pressed="false"
+                            class="px-2 py-2 rounded-lg text-xs font-bold text-slate-600 hover:text-slate-900 transition">
+                            Month
+                        </button>
+                        <button type="button" id="btnHomeModeYearly" data-action="set-home-mode" data-mode="yearly" aria-pressed="false"
+                            class="px-2 py-2 rounded-lg text-xs font-bold text-slate-600 hover:text-slate-900 transition">
+                            Year
+                        </button>
+                        <button type="button" id="btnHomeModeCustom" data-action="set-home-mode" data-mode="custom" aria-pressed="false"
+                            class="px-2 py-2 rounded-lg text-xs font-bold text-slate-600 hover:text-slate-900 transition">
+                            Custom
                         </button>
                     </div>
 
@@ -244,10 +256,35 @@
                                 </button>
                                 <input type="date" id="homeDatePicker" data-role="date-picker"
                                     class="flex-1 sm:w-44 min-w-0 px-3 py-2 rounded-xl border border-slate-300 bg-slate-50 text-xs sm:text-sm font-extrabold text-slate-900 text-center">
+                                <span id="homeRangeNavLabel" class="hidden flex-1 sm:w-56 min-w-0 px-2 py-2 rounded-xl border border-slate-200 bg-slate-50 text-xs sm:text-sm font-extrabold text-slate-900 text-center truncate"></span>
                                 <button type="button" id="homeNextBtn" data-action="shift-home-period" data-dir="1" aria-label="Next"
                                     class="px-3 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-xs font-extrabold text-slate-800 whitespace-nowrap shrink-0">
                                     Next ▶
                                 </button>
+                            </div>
+
+                            <!-- Custom Date Range Panel (only in Custom mode) -->
+                            <div id="homeCustomRangePanel" class="hidden space-y-2 rounded-xl border border-slate-200 bg-slate-50 p-2.5">
+                                <div class="grid grid-cols-2 gap-2">
+                                    <label class="space-y-1 min-w-0">
+                                        <span class="text-[10px] font-extrabold uppercase tracking-wider text-slate-500 block">From</span>
+                                        <input type="date" id="homeCustomFrom" data-role="custom-range"
+                                            class="w-full min-w-0 px-2 py-2 rounded-xl border border-slate-300 bg-white text-xs font-extrabold text-slate-900 text-center">
+                                    </label>
+                                    <label class="space-y-1 min-w-0">
+                                        <span class="text-[10px] font-extrabold uppercase tracking-wider text-slate-500 block">To</span>
+                                        <input type="date" id="homeCustomTo" data-role="custom-range"
+                                            class="w-full min-w-0 px-2 py-2 rounded-xl border border-slate-300 bg-white text-xs font-extrabold text-slate-900 text-center">
+                                    </label>
+                                </div>
+                                <p id="homeCustomRangeError" class="hidden text-[11px] font-extrabold text-rose-700 bg-rose-50 border border-rose-200 rounded-lg px-2.5 py-1.5"></p>
+                                <div class="flex flex-wrap gap-1.5">
+                                    <button type="button" data-action="custom-preset" data-preset="last7" class="px-2.5 py-1 rounded-full bg-white hover:bg-slate-100 border border-slate-200 text-[11px] font-extrabold text-slate-700">Last 7 days</button>
+                                    <button type="button" data-action="custom-preset" data-preset="last30" class="px-2.5 py-1 rounded-full bg-white hover:bg-slate-100 border border-slate-200 text-[11px] font-extrabold text-slate-700">Last 30 days</button>
+                                    <button type="button" data-action="custom-preset" data-preset="thisMonth" class="px-2.5 py-1 rounded-full bg-white hover:bg-slate-100 border border-slate-200 text-[11px] font-extrabold text-slate-700">This month</button>
+                                    <button type="button" data-action="custom-preset" data-preset="lastMonth" class="px-2.5 py-1 rounded-full bg-white hover:bg-slate-100 border border-slate-200 text-[11px] font-extrabold text-slate-700">Last month</button>
+                                    <button type="button" data-action="custom-preset" data-preset="ytd" class="px-2.5 py-1 rounded-full bg-white hover:bg-slate-100 border border-slate-200 text-[11px] font-extrabold text-slate-700">Year to date</button>
+                                </div>
                             </div>
 
                             <!-- Jump to Today / Current Week Centered Cleanly Below -->
@@ -931,6 +968,8 @@
                 activeTab: 'home',
                 selectedDate: '',
                 homeMode: 'daily',
+                customFrom: '',
+                customTo: '',
                 expandedMembers: {},
                 hasUnsavedEdits: false,
                 pendingActionAfterUnsaved: null,
@@ -1562,18 +1601,178 @@
                 showToast(`Day Completed ✓ (${formatDisplayDate(dateISO)}) — Grand Total: ${formatMoney(dayTotal)}`);
             }
 
-            function buildHomeSummaryText() {
+            // -----------------------------------------------------------------
+            // HOME PERIOD MODES: daily | weekly | monthly | yearly | custom
+            // -----------------------------------------------------------------
+            const HOME_MODES = ['daily', 'weekly', 'monthly', 'yearly', 'custom'];
+            const HOME_MODE_BUTTON_IDS = {
+                daily: 'btnHomeModeDaily', weekly: 'btnHomeModeWeekly', monthly: 'btnHomeModeMonthly',
+                yearly: 'btnHomeModeYearly', custom: 'btnHomeModeCustom'
+            };
+
+            function shiftMonthsISO(isoStr, deltaMonths) {
+                const d = parseLocalDate(isoStr);
+                const target = new Date(d.getFullYear(), d.getMonth() + deltaMonths, 1);
+                const lastDay = new Date(target.getFullYear(), target.getMonth() + 1, 0).getDate();
+                return toLocalISO(new Date(target.getFullYear(), target.getMonth(), Math.min(d.getDate(), lastDay)));
+            }
+
+            function listDatesBetween(startISO, endISO) {
+                const dates = [];
+                let cur = startISO;
+                while (cur <= endISO && dates.length < 3700) {
+                    dates.push(cur);
+                    cur = shiftDateISO(cur, 1);
+                }
+                return dates;
+            }
+
+            function formatRangeLabel(startISO, endISO) {
+                const a = parseLocalDate(startISO);
+                const b = parseLocalDate(endISO);
+                const sameYear = a.getFullYear() === b.getFullYear();
+                const aFmt = a.toLocaleDateString('en-US', sameYear ? { month: 'short', day: 'numeric' } : { month: 'short', day: 'numeric', year: 'numeric' });
+                const bFmt = b.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                return startISO === endISO ? bFmt : `${aFmt} – ${bFmt}`;
+            }
+
+            function ensureCustomRange() {
+                const base = appState.selectedDate || getTodayISO();
+                if (!appState.customFrom || !appState.customTo || appState.customFrom > appState.customTo) {
+                    appState.customFrom = base.slice(0, 8) + '01';
+                    appState.customTo = base;
+                }
+            }
+
+            function getHomePeriodInfo() {
                 const todayISO = getTodayISO();
                 const dateISO = appState.selectedDate || todayISO;
-                const isWeekly = appState.homeMode === 'weekly';
-                const weekInfo = getWeekBounds(dateISO);
-                const targetDates = isWeekly ? weekInfo.dates : [dateISO];
-                const periodEntries = getAllEntriesArray().filter(e => targetDates.includes(e.date));
+                const mode = HOME_MODES.includes(appState.homeMode) ? appState.homeMode : 'daily';
+                let startISO, endISO, label, totalLabel, jumpText, breakdownHeading, emptyText, periodWord;
+                if (mode === 'weekly') {
+                    const wb = getWeekBounds(dateISO);
+                    startISO = wb.startISO; endISO = wb.endISO;
+                    label = formatWeekRangeLabel(dateISO);
+                    totalLabel = 'Weekly Total (Mon–Sun)';
+                    jumpText = 'Jump to Current Week';
+                    breakdownHeading = 'Weekly Stream Breakdown (Mon–Sun)';
+                    periodWord = 'this week';
+                } else if (mode === 'monthly') {
+                    const d = parseLocalDate(dateISO);
+                    startISO = toLocalISO(new Date(d.getFullYear(), d.getMonth(), 1));
+                    endISO = toLocalISO(new Date(d.getFullYear(), d.getMonth() + 1, 0));
+                    label = d.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+                    totalLabel = 'Monthly Total';
+                    jumpText = 'Jump to This Month';
+                    breakdownHeading = 'Monthly Stream Breakdown';
+                    periodWord = 'this month';
+                } else if (mode === 'yearly') {
+                    const y = parseLocalDate(dateISO).getFullYear();
+                    startISO = `${y}-01-01`; endISO = `${y}-12-31`;
+                    label = String(y);
+                    totalLabel = 'Yearly Total';
+                    jumpText = 'Jump to This Year';
+                    breakdownHeading = 'Yearly Stream Breakdown';
+                    periodWord = 'this year';
+                } else if (mode === 'custom') {
+                    ensureCustomRange();
+                    startISO = appState.customFrom; endISO = appState.customTo;
+                    label = formatRangeLabel(startISO, endISO);
+                    totalLabel = 'Custom Range Total';
+                    jumpText = '';
+                    breakdownHeading = 'Custom Range Breakdown';
+                    periodWord = 'in this range';
+                } else {
+                    startISO = dateISO; endISO = dateISO;
+                    label = formatDisplayDate(dateISO);
+                    totalLabel = 'Selected Day Total';
+                    jumpText = 'Jump to Today';
+                    breakdownHeading = 'Daily Stream Breakdown';
+                    periodWord = 'this day';
+                }
+                const dates = mode === 'daily' ? [dateISO] : listDatesBetween(startISO, endISO);
+                const elapsedDates = dates.filter(d => d <= todayISO);
+                const countable = elapsedDates.length > 0 ? elapsedDates : dates;
+                return {
+                    mode, dateISO, startISO, endISO, dates, label, totalLabel, jumpText, breakdownHeading,
+                    emptyText: `No earnings logged ${periodWord} ($0.00)`,
+                    containsToday: todayISO >= startISO && todayISO <= endISO,
+                    loggedCount: countable.filter(d => Boolean(appState.completedDates[d])).length,
+                    countableDays: countable.length,
+                    entries: getAllEntriesArray().filter(e => e.date >= startISO && e.date <= endISO)
+                };
+            }
+
+            function shiftHomePeriod(dir) {
+                const info = getHomePeriodInfo();
+                if (info.mode === 'custom') {
+                    const len = info.dates.length;
+                    appState.customFrom = shiftDateISO(info.startISO, dir * len);
+                    appState.customTo = shiftDateISO(info.endISO, dir * len);
+                    renderHome();
+                    return;
+                }
+                const base = appState.selectedDate || getTodayISO();
+                let next;
+                if (info.mode === 'weekly') next = shiftDateISO(base, dir * 7);
+                else if (info.mode === 'monthly') next = shiftMonthsISO(base, dir);
+                else if (info.mode === 'yearly') next = shiftMonthsISO(base, dir * 12);
+                else next = shiftDateISO(base, dir);
+                setSelectedDate(next);
+            }
+
+            function applyCustomPreset(preset) {
+                const todayISO = getTodayISO();
+                const t = parseLocalDate(todayISO);
+                if (preset === 'last7') { appState.customFrom = shiftDateISO(todayISO, -6); appState.customTo = todayISO; }
+                else if (preset === 'last30') { appState.customFrom = shiftDateISO(todayISO, -29); appState.customTo = todayISO; }
+                else if (preset === 'thisMonth') { appState.customFrom = todayISO.slice(0, 8) + '01'; appState.customTo = todayISO; }
+                else if (preset === 'lastMonth') {
+                    appState.customFrom = toLocalISO(new Date(t.getFullYear(), t.getMonth() - 1, 1));
+                    appState.customTo = toLocalISO(new Date(t.getFullYear(), t.getMonth(), 0));
+                }
+                else if (preset === 'ytd') { appState.customFrom = `${t.getFullYear()}-01-01`; appState.customTo = todayISO; }
+                setCustomRangeError('');
+                renderHome();
+            }
+
+            function setCustomRangeError(msg) {
+                const el = document.getElementById('homeCustomRangeError');
+                if (!el) return;
+                el.textContent = msg || '';
+                el.classList.toggle('hidden', !msg);
+            }
+
+            function handleCustomRangeInput() {
+                const fromEl = document.getElementById('homeCustomFrom');
+                const toEl = document.getElementById('homeCustomTo');
+                const from = fromEl ? fromEl.value : '';
+                const to = toEl ? toEl.value : '';
+                if (!from || !to) {
+                    setCustomRangeError('Pick both a From and a To date.');
+                    return;
+                }
+                if (from > to) {
+                    setCustomRangeError('“From” must be on or before “To” — totals still show the last valid range.');
+                    return;
+                }
+                setCustomRangeError('');
+                appState.customFrom = from;
+                appState.customTo = to;
+                renderHome();
+            }
+
+            function buildHomeSummaryText() {
+                const info = getHomePeriodInfo();
+                const isDaily = info.mode === 'daily';
+                const periodEntries = info.entries;
                 const grandTotal = periodEntries.reduce((s, e) => s + e.amount, 0);
 
-                const titleLine = isWeekly
-                    ? `*Family Income — ${formatWeekRangeLabel(dateISO)}*`
-                    : `*Family Income — ${formatDisplayDate(dateISO)}*`;
+                const titleLine = info.mode === 'weekly'
+                    ? `*Family Income — ${formatWeekRangeLabel(info.dateISO)}*`
+                    : isDaily
+                        ? `*Family Income — ${formatDisplayDate(info.dateISO)}*`
+                        : `*Family Income — ${info.label}${info.mode === 'custom' ? '' : ` (${formatRangeLabel(info.startISO, info.endISO)})`}*`;
 
                 const lines = [titleLine, ''];
 
@@ -1585,7 +1784,7 @@
                         const sEntries = mEntries.filter(e => e.stream === streamName);
                         const sSum = sEntries.reduce((s, e) => s + e.amount, 0);
                         const hrsSum = sEntries.reduce((s, e) => s + (e.hours || 0), 0);
-                        if (sSum > 0 || !isWeekly) {
+                        if (sSum > 0 || isDaily) {
                             const hrNote = hrsSum > 0 ? ` (${hrsSum}h)` : '';
                             lines.push(`   • ${streamName}: ${formatMoney(sSum)}${hrNote}`);
                         }
@@ -1601,42 +1800,62 @@
                 const todayISO = getTodayISO();
                 const dateISO = appState.selectedDate || todayISO;
                 const monthISO = dateISO.slice(0, 7);
-                const isWeekly = appState.homeMode === 'weekly';
-                const weekInfo = getWeekBounds(dateISO);
-                const isCurrentWeek = weekInfo.dates.includes(todayISO);
+                const info = getHomePeriodInfo();
+                const isDailyMode = info.mode === 'daily';
 
-                const btnDaily = document.getElementById('btnHomeModeDaily');
-                const btnWeekly = document.getElementById('btnHomeModeWeekly');
-                if (btnDaily && btnWeekly) {
-                    btnDaily.className = !isWeekly
-                        ? 'px-4 py-2 rounded-lg text-xs font-extrabold bg-slate-900 text-white shadow-sm transition'
-                        : 'px-4 py-2 rounded-lg text-xs font-bold text-slate-600 hover:text-slate-900 transition';
-                    btnWeekly.className = isWeekly
-                        ? 'px-4 py-2 rounded-lg text-xs font-extrabold bg-slate-900 text-white shadow-sm transition'
-                        : 'px-4 py-2 rounded-lg text-xs font-bold text-slate-600 hover:text-slate-900 transition';
-                }
+                Object.entries(HOME_MODE_BUTTON_IDS).forEach(([mode, id]) => {
+                    const btn = document.getElementById(id);
+                    if (!btn) return;
+                    const active = mode === info.mode;
+                    btn.className = active
+                        ? 'px-2 py-2 rounded-lg text-xs font-extrabold bg-slate-900 text-white shadow-sm transition'
+                        : 'px-2 py-2 rounded-lg text-xs font-bold text-slate-600 hover:text-slate-900 transition';
+                    btn.setAttribute('aria-pressed', active ? 'true' : 'false');
+                });
 
                 const homeActiveDateLabel = document.getElementById('homeActiveDateLabel');
                 if (homeActiveDateLabel) {
-                    homeActiveDateLabel.textContent = isWeekly
-                        ? formatWeekRangeLabel(dateISO)
-                        : formatDisplayDate(dateISO);
+                    homeActiveDateLabel.textContent = info.label;
+                }
+
+                // Single-row nav: date picker for Day/Week/Month/Year; range label for Custom
+                const homePickerEl = document.getElementById('homeDatePicker');
+                const rangeNavLabel = document.getElementById('homeRangeNavLabel');
+                if (homePickerEl && rangeNavLabel) {
+                    homePickerEl.classList.toggle('hidden', info.mode === 'custom');
+                    rangeNavLabel.classList.toggle('hidden', info.mode !== 'custom');
+                    rangeNavLabel.textContent = info.mode === 'custom' ? `${info.dates.length} day${info.dates.length === 1 ? '' : 's'} • shift range` : '';
+                }
+                const prevBtn = document.getElementById('homePrevBtn');
+                const nextBtn = document.getElementById('homeNextBtn');
+                const stepWord = { daily: 'day', weekly: 'week', monthly: 'month', yearly: 'year', custom: 'range' }[info.mode];
+                if (prevBtn) prevBtn.setAttribute('aria-label', `Previous ${stepWord}`);
+                if (nextBtn) nextBtn.setAttribute('aria-label', `Next ${stepWord}`);
+
+                const customPanel = document.getElementById('homeCustomRangePanel');
+                if (customPanel) {
+                    customPanel.classList.toggle('hidden', info.mode !== 'custom');
+                    if (info.mode === 'custom') {
+                        const fromEl = document.getElementById('homeCustomFrom');
+                        const toEl = document.getElementById('homeCustomTo');
+                        if (fromEl && document.activeElement !== fromEl) fromEl.value = info.startISO;
+                        if (toEl && document.activeElement !== toEl) toEl.value = info.endISO;
+                    }
                 }
 
                 const jumpRow = document.getElementById('homeJumpTodayRow');
                 const jumpBtn = document.getElementById('homeJumpTodayBtn');
                 if (jumpRow && jumpBtn) {
-                    const shouldHide = isWeekly ? isCurrentWeek : (dateISO === todayISO);
+                    const shouldHide = info.mode === 'custom' || info.containsToday;
                     jumpRow.classList.toggle('hidden', shouldHide);
-                    jumpBtn.textContent = isWeekly ? 'Jump to Current Week' : 'Jump to Today';
+                    jumpBtn.textContent = info.jumpText || 'Jump to Today';
                 }
 
                 const statusPill = document.getElementById('homeDayStatusPill');
                 if (statusPill) {
-                    if (isWeekly) {
-                        const completedCount = weekInfo.dates.filter(d => Boolean(appState.completedDates[d])).length;
+                    if (!isDailyMode) {
                         statusPill.className = 'px-2.5 py-0.5 rounded-full bg-indigo-100 text-indigo-900 border border-indigo-200 text-xs font-extrabold';
-                        statusPill.textContent = `${completedCount}/7 Days Logged`;
+                        statusPill.textContent = `${info.loggedCount}/${info.countableDays} Days Logged`;
                     } else {
                         const isCompleted = Boolean(appState.completedDates[dateISO]);
                         if (isCompleted) {
@@ -1649,27 +1868,25 @@
                     }
                 }
 
-                const targetDates = isWeekly ? weekInfo.dates : [dateISO];
-                const periodEntries = getAllEntriesArray().filter(e => targetDates.includes(e.date));
+                const periodEntries = info.entries;
                 const periodGrandTotal = periodEntries.reduce((s, e) => s + e.amount, 0);
 
-                document.getElementById('homePeriodTotalLabel').textContent = isWeekly
-                    ? 'Weekly Total (Mon–Sun)'
-                    : 'Selected Day Total';
+                document.getElementById('homePeriodTotalLabel').textContent = info.totalLabel;
                 document.getElementById('homeSelectedDayGrandTotal').textContent = formatMoney(periodGrandTotal);
 
                 const isBclFri = isBiWeeklyBclPayday(dateISO);
                 const isThu = isThursday(dateISO);
                 const is30 = is30thPayday(dateISO);
                 const schedNotes = [];
-                if (isWeekly) {
-                    schedNotes.push('Showing 7-day totals (Mon–Sun) across all 5 members & streams');
+                if (!isDailyMode) {
+                    const rangeText = info.mode === 'weekly' ? '7-day totals (Mon–Sun)' : `${info.dates.length}-day totals (${formatRangeLabel(info.startISO, info.endISO)})`;
+                    schedNotes.push(`Showing ${rangeText} across all 5 members & streams`);
                 } else {
                     if (isBclFri) schedNotes.push('BC Liquor Bi-Weekly Pay');
                     if (isThu) schedNotes.push('Namit Thursday');
                     if (is30) schedNotes.push('30th Monthly Paydays');
                 }
-                document.getElementById('homeScheduledHintText').textContent = isWeekly
+                document.getElementById('homeScheduledHintText').textContent = !isDailyMode
                     ? schedNotes[0]
                     : (schedNotes.length > 0 ? `Scheduled today: ${schedNotes.join(' • ')}` : 'All 5 members shown • Tap any member to inspect streams');
 
@@ -1697,7 +1914,7 @@
 
                     const subtitleText = activeSummaryParts.length > 0
                         ? activeSummaryParts.join(' • ')
-                        : (isWeekly ? 'No earnings logged this week ($0.00)' : 'No earnings logged this day ($0.00)');
+                        : info.emptyText;
 
                     const streamRowsHTML = m.streams.map(sName => {
                         const sEntries = mEntries.filter(e => e.stream === sName);
@@ -1747,7 +1964,7 @@
                                 <div class="px-3.5 sm:px-4 pb-3.5 pt-2 bg-slate-50 border-t border-slate-100 space-y-1.5">
                                     <div class="flex items-center justify-between pb-1">
                                         <span class="text-[10px] font-extrabold uppercase tracking-wider text-slate-400">
-                                            ${isWeekly ? 'Weekly Stream Breakdown (Mon–Sun)' : 'Daily Stream Breakdown'}
+                                            ${escapeHTML(info.breakdownHeading)}
                                         </span>
                                         <span class="text-[10px] font-bold text-slate-400">${m.streams.length} streams</span>
                                     </div>
@@ -2058,12 +2275,15 @@
                 } else if (action === 'open-daily-entry-selected') {
                     switchTab('entry');
                 } else if (action === 'set-home-mode') {
-                    appState.homeMode = btn.dataset.mode === 'weekly' ? 'weekly' : 'daily';
+                    appState.homeMode = HOME_MODES.includes(btn.dataset.mode) ? btn.dataset.mode : 'daily';
+                    if (appState.homeMode === 'custom') ensureCustomRange();
+                    setCustomRangeError('');
                     renderHome();
+                } else if (action === 'custom-preset') {
+                    applyCustomPreset(btn.dataset.preset);
                 } else if (action === 'shift-home-period') {
                     const dir = Number(btn.dataset.dir) || 0;
-                    const step = appState.homeMode === 'weekly' ? dir * 7 : dir;
-                    setSelectedDate(shiftDateISO(appState.selectedDate || getTodayISO(), step));
+                    shiftHomePeriod(dir);
                 } else if (action === 'shift-date') {
                     const days = Number(btn.dataset.days) || 0;
                     setSelectedDate(shiftDateISO(appState.selectedDate || getTodayISO(), days));
@@ -2202,6 +2422,8 @@
                 const role = e.target.dataset.role;
                 if (role === 'date-picker') {
                     if (e.target.value) setSelectedDate(e.target.value);
+                } else if (role === 'custom-range') {
+                    handleCustomRangeInput();
                 } else if (role === 'off-schedule-toggle') {
                     appState.showOffSchedule = Boolean(e.target.checked);
                     renderDailyEntry();
