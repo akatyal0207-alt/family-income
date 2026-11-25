@@ -1,5 +1,5 @@
-const CACHE = "family-income-a8f3c5b20d";
-const PRECACHE = /*PRECACHE_START*/["./",".nojekyll","apple-touch-icon.png","favicon-16.png","favicon-32.png","favicon.ico","icon-192.png","icon-512.png","maskable-192.png","maskable-512.png","index.html","logo.svg","manifest.webmanifest"]/*PRECACHE_END*/;
+const CACHE = "family-income-va-20261124";
+const PRECACHE = /*PRECACHE_START*/["./","apple-touch-icon.png","favicon-16.png","favicon-32.png","favicon.ico","icon-192.png","icon-512.png","maskable-192.png","maskable-512.png","index.html","logo.svg","manifest.webmanifest"]/*PRECACHE_END*/;
 
 const EXTRA_URLS = [
   "https://cdn.tailwindcss.com",

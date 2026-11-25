@@ -123,6 +123,78 @@
         <!-- ===================================================================== -->
         <section id="viewTabHome" class="space-y-5">
 
+            <!-- ================================================================= -->
+            <!-- VOICE & SMART ASSISTANT (log entries or ask about past totals)    -->
+            <!-- ================================================================= -->
+            <div id="vaCard" class="bg-white rounded-2xl p-5 sm:p-6 border border-slate-200 shadow-sm space-y-3">
+                <div class="flex items-start justify-between gap-3">
+                    <div class="flex items-start gap-2.5 min-w-0">
+                        <span class="w-10 h-10 rounded-2xl bg-emerald-500/15 border border-emerald-400/40 flex items-center justify-center text-lg shrink-0" aria-hidden="true">🎙️</span>
+                        <div class="min-w-0">
+                            <h2 class="text-sm sm:text-base font-extrabold text-slate-900">Voice &amp; Smart Assistant</h2>
+                            <p class="text-xs text-slate-500">Speak or type in English, Hindi or Hinglish. Log entries (you confirm before anything saves) or ask about past totals.</p>
+                        </div>
+                    </div>
+                    <select id="vaLangSelect" aria-label="Speech language"
+                        class="shrink-0 px-2 py-1.5 rounded-xl border border-slate-300 bg-slate-50 text-[11px] font-extrabold text-slate-700">
+                        <option value="en-IN" selected>Hinglish / EN</option>
+                        <option value="hi-IN">हिन्दी</option>
+                        <option value="en-US">English (US)</option>
+                    </select>
+                </div>
+
+                <label for="vaInput" class="sr-only">Assistant command or question</label>
+                <textarea id="vaInput" rows="2" autocomplete="off" autocapitalize="sentences" spellcheck="false"
+                    placeholder="e.g. Aaj Aditya ke 7 hours BC Liquor aur $100 Uber daal de…"
+                    class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-400 text-sm font-semibold text-slate-900 resize-none"></textarea>
+
+                <div class="grid grid-cols-[auto_1fr_auto] gap-2">
+                    <button type="button" id="vaMicBtn" data-action="va-mic"
+                        class="px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs sm:text-sm font-extrabold shadow-sm transition whitespace-nowrap">
+                        🎤 Speak
+                    </button>
+                    <button type="button" id="vaRunBtn" data-action="va-run"
+                        class="px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs sm:text-sm font-extrabold shadow-sm transition">
+                        Check / Ask
+                    </button>
+                    <button type="button" data-action="va-clear" aria-label="Clear assistant"
+                        class="px-3 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-extrabold transition">
+                        Clear
+                    </button>
+                </div>
+
+                <p id="vaMicStatus" class="hidden text-xs font-semibold rounded-xl px-3 py-2"></p>
+
+                <div class="flex gap-1.5 overflow-x-auto no-scrollbar -mx-1 px-1 pb-0.5" aria-label="Example commands">
+                    <button type="button" data-action="va-chip" data-text="Aaj Aditya ke 7 hours BC Liquor aur $100 Uber daal de aur Neha ke 7 hours BC Liquor"
+                        class="shrink-0 px-3 py-1.5 rounded-full bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-emerald-800 text-[11px] font-bold whitespace-nowrap">
+                        ➕ Aaj Aditya 7h BC Liquor + $100 Uber, Neha 7h
+                    </button>
+                    <button type="button" data-action="va-chip" data-text="Pichle mahine Neha ke kitne paise aaye the?"
+                        class="shrink-0 px-3 py-1.5 rounded-full bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 text-indigo-800 text-[11px] font-bold whitespace-nowrap">
+                        ❓ Pichle mahine Neha ke kitne paise aaye the?
+                    </button>
+                    <button type="button" data-action="va-chip" data-text="Is mahine BC Liquor se kitna bana?"
+                        class="shrink-0 px-3 py-1.5 rounded-full bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 text-indigo-800 text-[11px] font-bold whitespace-nowrap">
+                        ❓ Is mahine BC Liquor se kitna bana?
+                    </button>
+                    <button type="button" data-action="va-chip" data-text="Namit ki saari Thursday entries ho gayi thi?"
+                        class="shrink-0 px-3 py-1.5 rounded-full bg-sky-50 hover:bg-sky-100 border border-sky-200 text-sky-800 text-[11px] font-bold whitespace-nowrap">
+                        ✅ Namit ki saari Thursday entries ho gayi thi?
+                    </button>
+                    <button type="button" data-action="va-chip" data-text="Kal Aditya ke $85 Lyft aur $40 Instacart"
+                        class="shrink-0 px-3 py-1.5 rounded-full bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-emerald-800 text-[11px] font-bold whitespace-nowrap">
+                        ➕ Kal Aditya $85 Lyft + $40 Instacart
+                    </button>
+                    <button type="button" data-action="va-chip" data-text="This week Aditya Uber total?"
+                        class="shrink-0 px-3 py-1.5 rounded-full bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 text-indigo-800 text-[11px] font-bold whitespace-nowrap">
+                        ❓ This week Aditya Uber total?
+                    </button>
+                </div>
+
+                <div id="vaOutput" aria-live="polite"></div>
+            </div>
+
             <!-- Selected Period Card -->
             <div class="bg-white rounded-2xl p-5 sm:p-6 border border-slate-200 shadow-sm space-y-4">
 
@@ -2138,6 +2210,1009 @@
                     renderHistory();
                 }
             });
+
+            // -----------------------------------------------------------------
+            // VOICE & SMART ASSISTANT (local rule-based parser, no backend)
+            // -----------------------------------------------------------------
+            const VA_BCL_SHIFT = 'BC Liquor • Daily Shift Hours';
+            const VA_BCL_BW = 'BC Liquor • Bi-Weekly Pay';
+            const VA_BCL_GENERIC = '__BCL_GENERIC__';
+            const VA_HOURLY_STREAMS = [VA_BCL_SHIFT];
+
+            const VA_MEMBER_ALIASES = [
+                { name: 'Aditya', aliases: ['aditya', 'adithya', 'aaditya', 'aditiya', 'adithiya', 'adi', 'ady', 'adit'] },
+                { name: 'Neha', aliases: ['neha', 'nehaa', 'neeha', 'nehha'] },
+                { name: 'Namit', aliases: ['namit', 'nameet', 'namith', 'namet', 'nammit'] },
+                { name: 'Shanaya', aliases: ['shanaya', 'shanaaya', 'shanaiya', 'shanya', 'shnaya', 'shaanaya', 'shanaya\'s'] },
+                { name: 'S.K. Surendra Katyal', aliases: ['s.k. surendra katyal', 's k surendra katyal', 'sk surendra katyal', 'surendra katyal', 's.k. katyal', 's k katyal', 'sk katyal', 'surendra', 'surender', 'surinder', 's.k.', 's.k', 's k', 'sk', 'papaji', 'papa ji', 'papa', 'pitaji', 'daddy', 'dad'] }
+            ];
+
+            const VA_STREAM_ALIASES = [
+                { stream: VA_BCL_BW, aliases: ['bc liquor bi-weekly pay', 'bc liquor bi weekly pay', 'bc liquor biweekly pay', 'bc liquor bi-weekly', 'bc liquor bi weekly', 'bc liquor biweekly', 'bcl bi-weekly', 'bcl bi weekly', 'bcl biweekly', 'liquor bi-weekly', 'liquor bi weekly', 'liquor biweekly', 'bi-weekly pay', 'bi weekly pay', 'biweekly pay', 'bi-weekly', 'bi weekly', 'biweekly', 'paycheque', 'paycheck', 'pay cheque', 'pay check', 'bcl pay', 'liquor pay'] },
+                { stream: VA_BCL_SHIFT, aliases: ['bc liquor daily shift hours', 'bc liquor daily shift', 'bc liquor shift', 'bcl shift', 'liquor shift', 'daily shift', 'shift'] },
+                { stream: VA_BCL_GENERIC, aliases: ['b.c. liquor', 'b c liquor', 'b.c liquor', 'bc liquor', 'bc liquour', 'bc liqour', 'bc likar', 'bc licker', 'bc liquor store', 'bcl', 'liquor store', 'liquor', 'likar', 'bc'] },
+                { stream: 'Uber', aliases: ['uber eats', 'uber', 'ubar', 'ubber', 'oober'] },
+                { stream: 'Lyft', aliases: ['lyft', 'lift', 'lyf'] },
+                { stream: 'Instacart', aliases: ['instacart', 'insta cart', 'instakart', 'insta'] },
+                { stream: 'LED Lights Sales', aliases: ['led lights sales', 'led light sales', 'led lights sale', 'led lights', 'led light', 'led sales', 'led', 'lights sale', 'light sales', 'lights'] },
+                { stream: 'Envision', aliases: ['envision', 'envisions', 'invision', 'en vision'] },
+                { stream: 'Monthly Salary', aliases: ['monthly salary', 'salary', 'salry', 'tankhwah', 'tankhwa', 'tankha', 'pagaar', 'pagar'] },
+                { stream: 'Weekly Income', aliases: ['weekly income', 'weekly pay', 'weekly'] },
+                { stream: 'Child Care Benefit', aliases: ['child care benefit', 'childcare benefit', 'child benefit', 'child care', 'childcare', 'ccb', 'benefit'] },
+                { stream: 'Monthly Income', aliases: ['monthly income', 'pension', 'monthly'] }
+            ];
+
+            const VA_STREAM_SYNONYM = { 'Monthly Income': 'Monthly Salary', 'Monthly Salary': 'Monthly Income' };
+
+            const VA_DEVANAGARI_MAP = [
+                ['आदित्य', ' aditya '], ['नेहा', ' neha '], ['नमित', ' namit '], ['शनाया', ' shanaya '], ['सुरेंद्र', ' surendra '], ['सुरेन्द्र', ' surendra '], ['पापा', ' papa '],
+                ['परसों', ' parso '], ['आज', ' aaj '], ['कल', ' kal '],
+                ['घंटे', ' ghante '], ['घंटा', ' ghanta '], ['घण्टे', ' ghante '], ['डॉलर', ' dollar '], ['डालर', ' dollar '],
+                ['बीसी', ' bc '], ['लिकर', ' liquor '], ['उबर', ' uber '], ['ऊबर', ' uber '], ['लिफ्ट', ' lyft '], ['इंस्टाकार्ट', ' instacart '],
+                ['कितना', ' kitna '], ['कितने', ' kitne '], ['कितनी', ' kitni '], ['पिछले', ' pichle '], ['पिछला', ' pichla '], ['इस', ' is '],
+                ['महीने', ' mahine '], ['महीना', ' mahina '], ['हफ्ते', ' hafte '], ['हफ़्ते', ' hafte '], ['साल', ' saal '],
+                ['गुरुवार', ' thursday '], ['वीरवार', ' thursday '], ['सोमवार', ' monday '], ['मंगलवार', ' tuesday '], ['बुधवार', ' wednesday '],
+                ['शुक्रवार', ' friday '], ['शनिवार', ' saturday '], ['रविवार', ' sunday '],
+                ['और', ' aur '], ['डाल', ' daal '], ['दो', ' do '], ['दे', ' de '], ['जोड़', ' jod '], ['के', ' ke '], ['की', ' ki '], ['का', ' ka '],
+                ['सारी', ' saari '], ['हो गई', ' ho gayi '], ['हो गयी', ' ho gayi '], ['पैसे', ' paise '], ['बना', ' bana '], ['आए', ' aaye '], ['आये', ' aaye '],
+                ['कुल', ' total '], ['टोटल', ' total '], ['रुपये', ' rupees '], ['रुपए', ' rupees ']
+            ];
+
+            const VA_EN_UNITS = { zero: 0, one: 1, two: 2, three: 3, four: 4, five: 5, six: 6, seven: 7, eight: 8, nine: 9, ten: 10, eleven: 11, twelve: 12, thirteen: 13, fourteen: 14, fifteen: 15, sixteen: 16, seventeen: 17, eighteen: 18, nineteen: 19 };
+            const VA_EN_TENS = { twenty: 20, thirty: 30, forty: 40, fifty: 50, sixty: 60, seventy: 70, eighty: 80, ninety: 90 };
+            const VA_HI_NUMS = { ek: 1, do: 2, teen: 3, tin: 3, char: 4, chaar: 4, paanch: 5, panch: 5, chhe: 6, chhah: 6, che: 6, cheh: 6, saat: 7, sat: 7, aath: 8, ath: 8, nau: 9, das: 10, dus: 10, gyarah: 11, gyara: 11, barah: 12, bara: 12, terah: 13, chaudah: 14, pandrah: 15, solah: 16, satrah: 17, atharah: 18, unnis: 19, bees: 20, tees: 30, chalis: 40, pachas: 50, pachaas: 50, sau: 100 };
+
+            const VA_MONTH_NAMES = [
+                ['january', 'jan'], ['february', 'feb'], ['march', 'mar'], ['april', 'apr'], ['may'], ['june', 'jun'],
+                ['july', 'jul'], ['august', 'aug'], ['september', 'sept', 'sep'], ['october', 'oct'], ['november', 'nov'], ['december', 'dec']
+            ];
+            const VA_MONTH_LOOKUP = {};
+            VA_MONTH_NAMES.forEach((names, idx) => names.forEach(n => { VA_MONTH_LOOKUP[n] = idx; }));
+            const VA_MONTH_RE = Object.keys(VA_MONTH_LOOKUP).sort((a, b) => b.length - a.length).join('|');
+
+            const VA_WEEKDAYS = [
+                ['sunday', 'sundays', 'ravivar', 'raviwar', 'itvaar', 'itwar', 'etwar'],
+                ['monday', 'mondays', 'somvar', 'somwar'],
+                ['tuesday', 'tuesdays', 'tue', 'tues', 'mangalvar', 'mangalwar'],
+                ['wednesday', 'wednesdays', 'wed', 'budhvar', 'budhwar'],
+                ['thursday', 'thursdays', 'thu', 'thurs', 'guruvar', 'guruwar', 'veervar', 'virwar', 'veerwar', 'brihaspativar'],
+                ['friday', 'fridays', 'fri', 'shukravar', 'shukrawar'],
+                ['saturday', 'saturdays', 'shanivar', 'shaniwar']
+            ];
+            const VA_WEEKDAY_LOOKUP = {};
+            VA_WEEKDAYS.forEach((names, idx) => names.forEach(n => { VA_WEEKDAY_LOOKUP[n] = idx; }));
+            const VA_WEEKDAY_RE = Object.keys(VA_WEEKDAY_LOOKUP).sort((a, b) => b.length - a.length).join('|');
+            const VA_WEEKDAY_LABEL = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+
+            const VA_UNIT_HOURS = '(?:hours?|hrs?|hr|ghante|ghanta|ghanton|gante|ganta|gaante|h)';
+            const VA_UNIT_DOLLARS = '(?:dollars?|bucks|usd|cad)';
+
+            let vaState = { pending: null, recognition: null, listening: false };
+
+            function vaRound2(n) { return Math.round((Number(n) || 0) * 100) / 100; }
+            function vaFmtNum(n) { return String(Number((Number(n) || 0).toFixed(2))); }
+            function vaEscRe(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
+
+            function vaNormalize(raw) {
+                let t = String(raw || '');
+                VA_DEVANAGARI_MAP.forEach(([dev, lat]) => { t = t.split(dev).join(lat); });
+                t = t.replace(/[०-९]/g, ch => String('०१२३४५६७८९'.indexOf(ch)));
+                t = t.toLowerCase()
+                    .replace(/[’‘`]/g, "'")
+                    .replace(/[“”]/g, '"')
+                    .replace(/₹\s*/g, ' rupees ')
+                    .replace(/(\d),(\d{3})/g, '$1$2')
+                    .replace(/(\d),(\d{3})/g, '$1$2')
+                    .replace(/\$\s+(\d)/g, '$$$1')
+                    .replace(/(\d+(?:\.\d+)?)\s*\$/g, '$$$1')
+                    .replace(/[!]/g, ' ')
+                    .replace(/\s+/g, ' ')
+                    .trim();
+                t = vaConvertNumberWords(t);
+                return ' ' + t + ' ';
+            }
+
+            function vaConvertNumberWords(text) {
+                // Hindi fractional prefixes with digits: "saade 7" -> 7.5, "sawa 7" -> 7.25, "paune 7" -> 6.75
+                let t = text
+                    .replace(/\b(saade|sade|saadhe|sadhe)\s+(\d+)\b/g, (m, p, n) => String(Number(n) + 0.5))
+                    .replace(/\b(sawa|savaa|sava)\s+(\d+)\b/g, (m, p, n) => String(Number(n) + 0.25))
+                    .replace(/\b(paune|pone)\s+(\d+)\b/g, (m, p, n) => String(Number(n) - 0.25))
+                    .replace(/\b(dedh|derh)\b/g, '1.5')
+                    .replace(/\b(dhai|dhaai|adhai|dhaee)\b/g, '2.5')
+                    .replace(/\b(\d+)\s+(?:and a half|and half|1\/2)\b/g, (m, n) => String(Number(n) + 0.5));
+
+                // Hindi number words, only when directly followed by a unit (so "daal do" stays untouched)
+                const hiWords = Object.keys(VA_HI_NUMS).sort((a, b) => b.length - a.length).join('|');
+                const hiRe = new RegExp(`\\b(?:(saade|sade|saadhe|sadhe|sawa|sava|paune)\\s+)?(${hiWords})\\s+(?=(?:${VA_UNIT_HOURS.slice(3, -1)}|${VA_UNIT_DOLLARS.slice(3, -1)})\\b)`, 'g');
+                t = t.replace(hiRe, (m, prefix, word) => {
+                    let n = VA_HI_NUMS[word];
+                    if (prefix && /^sa+d/.test(prefix)) n += 0.5;
+                    else if (prefix && /^saw|^sav/.test(prefix)) n += 0.25;
+                    else if (prefix && /^paun/.test(prefix)) n -= 0.25;
+                    return `${n} `;
+                });
+
+                // English number words ("seven", "twenty five", "one hundred and fifty", "seven and a half")
+                const enWord = Object.keys(VA_EN_UNITS).concat(Object.keys(VA_EN_TENS), ['hundred', 'thousand']).join('|');
+                const enRe = new RegExp(`\\b(?:${enWord})(?:(?:\\s+|-)(?:and\\s+)?(?:${enWord}))*(?:\\s+and\\s+a\\s+half)?\\b`, 'g');
+                t = t.replace(enRe, (phrase) => {
+                    const half = /and a half$/.test(phrase);
+                    const words = phrase.replace(/and a half$/, '').split(/[\s-]+/).filter(w => w && w !== 'and');
+                    let total = 0, current = 0;
+                    words.forEach(w => {
+                        if (w in VA_EN_UNITS) current += VA_EN_UNITS[w];
+                        else if (w in VA_EN_TENS) current += VA_EN_TENS[w];
+                        else if (w === 'hundred') current = (current || 1) * 100;
+                        else if (w === 'thousand') { total += (current || 1) * 1000; current = 0; }
+                    });
+                    return String(total + current + (half ? 0.5 : 0));
+                });
+                return t;
+            }
+
+            // Find whole-word alias mentions (no lookbehind, so it works on older iOS Safari)
+            function vaFindMentions(text, table, key) {
+                const flat = [];
+                table.forEach(row => row.aliases.forEach(a => flat.push({ alias: a, value: row[key] })));
+                flat.sort((a, b) => b.alias.length - a.alias.length);
+                const found = [];
+                const isWordChar = ch => /[a-z0-9]/.test(ch || '');
+                flat.forEach(({ alias, value }) => {
+                    let from = 0;
+                    while (true) {
+                        const idx = text.indexOf(alias, from);
+                        if (idx === -1) break;
+                        from = idx + 1;
+                        const before = text[idx - 1];
+                        const after = text[idx + alias.length];
+                        if (isWordChar(before) || isWordChar(alias[alias.length - 1]) && isWordChar(after)) continue;
+                        if (isWordChar(alias[0]) && isWordChar(before)) continue;
+                        const end = idx + alias.length;
+                        if (found.some(f => idx < f.end && end > f.start)) continue;
+                        found.push({ start: idx, end, value, alias });
+                    }
+                });
+                return found.sort((a, b) => a.start - b.start);
+            }
+
+            function vaMakeISO(y, mIdx, d) {
+                const dt = new Date(y, mIdx, d);
+                if (dt.getFullYear() !== y || dt.getMonth() !== mIdx || dt.getDate() !== d) return null;
+                return toLocalISO(dt);
+            }
+
+            function vaMostRecentWeekday(wd, forceStrictlyPast) {
+                const todayISO = getTodayISO();
+                const todayWd = parseLocalDate(todayISO).getDay();
+                let diff = (todayWd - wd + 7) % 7;
+                if (diff === 0 && forceStrictlyPast) diff = 7;
+                return shiftDateISO(todayISO, -diff);
+            }
+
+            // Pull one date out of a piece of text. Returns { iso, label, start, end } or null.
+            function vaExtractDate(text) {
+                const todayISO = getTodayISO();
+                const curYear = parseLocalDate(todayISO).getFullYear();
+                const candidates = [];
+                const pushMatch = (re, fn) => {
+                    re.lastIndex = 0;
+                    let m;
+                    while ((m = re.exec(text)) !== null) {
+                        const res = fn(m);
+                        if (res) candidates.push({ ...res, start: m.index, end: m.index + m[0].length });
+                    }
+                };
+                const withYearGuess = (mIdx, d, yStr) => {
+                    if (yStr) return vaMakeISO(Number(yStr), mIdx, d);
+                    let iso = vaMakeISO(curYear, mIdx, d);
+                    if (iso && iso > todayISO) iso = vaMakeISO(curYear - 1, mIdx, d);
+                    return iso;
+                };
+                pushMatch(/\b(\d{4})-(\d{1,2})-(\d{1,2})\b/g, m => {
+                    const iso = vaMakeISO(Number(m[1]), Number(m[2]) - 1, Number(m[3]));
+                    return iso ? { iso, label: 'date you said' } : null;
+                });
+                pushMatch(new RegExp(`\\b(\\d{1,2})(?:st|nd|rd|th)?\\s+(?:of\\s+)?(${VA_MONTH_RE})\\b\\.?(?:,?\\s*(\\d{4})\\b)?`, 'g'), m => {
+                    const iso = withYearGuess(VA_MONTH_LOOKUP[m[2]], Number(m[1]), m[3]);
+                    return iso ? { iso, label: 'date you said' } : null;
+                });
+                pushMatch(new RegExp(`\\b(${VA_MONTH_RE})\\b\\.?\\s+(\\d{1,2})(?:st|nd|rd|th)?\\b(?!\\s*${VA_UNIT_HOURS}\\b|\\s*${VA_UNIT_DOLLARS}\\b)(?:,?\\s*(\\d{4})\\b)?`, 'g'), m => {
+                    const iso = withYearGuess(VA_MONTH_LOOKUP[m[1]], Number(m[2]), m[3]);
+                    return iso ? { iso, label: 'date you said' } : null;
+                });
+                pushMatch(/\b(day before yesterday|parso|parson|parsoon|parsun|parsu)\b/g, () => ({ iso: shiftDateISO(todayISO, -2), label: '"parso / day before yesterday"' }));
+                pushMatch(/\b(yesterday|kal|kaal|kall|beete kal)\b/g, m => ({ iso: shiftDateISO(todayISO, -1), label: m[1] === 'yesterday' ? '"yesterday"' : '"kal" read as yesterday' }));
+                pushMatch(/\b(today|aaj|aj|aaje|tonight)\b/g, m => ({ iso: todayISO, label: `"${m[1]}"` }));
+                pushMatch(new RegExp(`\\b(?:(last|pichle|pichhle|pichla|previous|pichli)\\s+)?(${VA_WEEKDAY_RE})\\b`, 'g'), m => {
+                    const wd = VA_WEEKDAY_LOOKUP[m[2]];
+                    return { iso: vaMostRecentWeekday(wd, Boolean(m[1])), label: `most recent ${VA_WEEKDAY_LABEL[wd]}`, weekday: wd };
+                });
+                // Drop overlapping candidates (keep earliest-registered / longest)
+                const kept = [];
+                candidates.forEach(c => {
+                    if (!kept.some(k => c.start < k.end && c.end > k.start)) kept.push(c);
+                });
+                return kept.sort((a, b) => a.start - b.start);
+            }
+
+            function vaBlank(text, start, end) {
+                return text.slice(0, start) + ' '.repeat(end - start) + text.slice(end);
+            }
+
+            function vaIsQuestion(norm) {
+                const hasQ = /\?/.test(norm) || /\b(kitna|kitne|kitni|kitnaa|kitney|how much|how many|total|kya|kyaa|check|missing|miss|ho gayi|ho gai|ho gaye|ho gya|ho gayi thi|hui|hue|show|batao|bata|btao|dikhao|what|whats|what's|summary|earned|earn|kamaya|kamaye|kamai|kamayi|bana|bane|bani|aaye|aaya|aya|aye|mila|mile|mili|did|were|was|tell|report|baki|baaki|pending|entries|completed|complete)\b/.test(norm);
+                const hasLog = /\b(daal|dal|daalo|dalo|daaldo|daldo|add|log|save|likh|likho|likhdo|likh do|jod|jodo|jod do|enter|record|put|note|kar do|kardo|karo|set)\b/.test(norm);
+                const hasUnitQty = new RegExp(`(\\$\\d|\\d+(?:\\.\\d+)?\\s*(?:${VA_UNIT_HOURS.slice(3, -1)}|${VA_UNIT_DOLLARS.slice(3, -1)})\\b)`).test(norm);
+                if (hasLog && hasUnitQty) return false;
+                if (hasQ) return true;
+                if (hasUnitQty) return false;
+                if (/\d/.test(norm) && (vaFindMentions(norm, VA_MEMBER_ALIASES, 'name').length || vaFindMentions(norm, VA_STREAM_ALIASES, 'stream').length)) return false;
+                return true;
+            }
+
+            function vaMemberConfig(name) {
+                return FAMILY_MEMBERS.find(m => m.name === name);
+            }
+
+            function vaResolveStream(member, rawStream, kind, dateISO) {
+                const cfg = vaMemberConfig(member);
+                if (!cfg) return { error: `Unknown member "${member}"` };
+                let stream = rawStream;
+                if (stream === VA_BCL_GENERIC) {
+                    if (!cfg.streams.includes(VA_BCL_SHIFT)) return { error: `${member} has no BC Liquor stream` };
+                    if (kind === 'hours') stream = VA_BCL_SHIFT;
+                    else if (isBiWeeklyBclPayday(dateISO)) stream = VA_BCL_BW;
+                    else return { error: `BC Liquor with a dollar amount for ${member} is unclear — say hours for a shift (e.g. "7 hours BC Liquor") or "BC Liquor bi-weekly $X" for the paycheque` };
+                }
+                if (!cfg.streams.includes(stream) && VA_STREAM_SYNONYM[stream] && cfg.streams.includes(VA_STREAM_SYNONYM[stream])) {
+                    stream = VA_STREAM_SYNONYM[stream];
+                }
+                if (!cfg.streams.includes(stream)) {
+                    return { error: `${member} has no "${stream}" stream (${member}'s streams: ${cfg.streams.join(', ')})` };
+                }
+                return { stream };
+            }
+
+            function vaDefaultStream(member, kind) {
+                const cfg = vaMemberConfig(member);
+                if (!cfg) return null;
+                if (kind === 'hours' && cfg.streams.includes(VA_BCL_SHIFT)) return VA_BCL_SHIFT;
+                if (kind !== 'hours' && cfg.streams.length === 1) return cfg.streams[0];
+                return null;
+            }
+
+            // Pull hours / dollars / rate / rupee / bare-number quantities out of a clause
+            function vaExtractQuantities(clause) {
+                let t = clause;
+                const qty = [];
+                const errors = [];
+                let rate = null;
+                const take = (re, fn) => {
+                    re.lastIndex = 0;
+                    let m;
+                    const hits = [];
+                    while ((m = re.exec(t)) !== null) hits.push({ m, start: m.index, end: m.index + m[0].length });
+                    hits.forEach(h => { fn(h.m, h.start); t = vaBlank(t, h.start, h.end); });
+                };
+                // Rupees are not supported (app tracks dollars)
+                take(/(?:\b(?:rs\.?|inr|rupees?)\s*(\d+(?:\.\d+)?))|(?:\b(\d+(?:\.\d+)?)\s*(?:rupees?|rupaye|rupaiye|rupay|rs\.?|inr)\b)/g, (m) => {
+                    errors.push(`"${(m[0] || '').trim()}" is in rupees — this tracker records dollars. Say it as $ / dollars.`);
+                });
+                // Hourly rate: "@ $28", "at 28/hr", "$28 per hour", "rate 28"
+                take(new RegExp(`(?:@|\\bat\\b|\\brate\\b|\\brate of\\b)\\s*\\$?(\\d+(?:\\.\\d+)?)\\s*(?:\\/\\s*(?:hr|hour|h)\\b|per\\s+(?:hour|hr)\\b|an\\s+hour\\b|hourly\\b|ph\\b|ka rate\\b)?|\\$?(\\d+(?:\\.\\d+)?)\\s*(?:\\/\\s*(?:hr|hour|h)\\b|per\\s+(?:hour|hr|ghanta)\\b|an\\s+hour\\b|ph\\b|ka rate\\b)`, 'g'), (m) => {
+                    rate = parseFloat(m[1] || m[2]);
+                });
+                take(new RegExp(`\\b(\\d+(?:\\.\\d+)?)\\s*${VA_UNIT_HOURS}\\b`, 'g'), (m, pos) => {
+                    qty.push({ kind: 'hours', value: parseFloat(m[1]), pos });
+                });
+                take(new RegExp(`\\$(\\d+(?:\\.\\d+)?)(?:\\s*${VA_UNIT_DOLLARS}\\b)?|\\b(\\d+(?:\\.\\d+)?)\\s*${VA_UNIT_DOLLARS}\\b`, 'g'), (m, pos) => {
+                    qty.push({ kind: 'dollars', value: parseFloat(m[1] || m[2]), pos });
+                });
+                take(/\b(\d+(?:\.\d+)?)\b/g, (m, pos) => {
+                    qty.push({ kind: 'bare', value: parseFloat(m[1]), pos });
+                });
+                qty.sort((a, b) => a.pos - b.pos);
+                return { qty, rate, errors, rest: t };
+            }
+
+            function vaParseLog(rawText) {
+                const norm = vaNormalize(rawText);
+                const defaultISO = appState.selectedDate || getTodayISO();
+                const result = { kind: 'log', text: rawText, items: [], errors: [], notes: [] };
+
+                // Dates: one distinct date anywhere applies to all; several -> per member segment
+                const allDates = vaExtractDate(norm);
+                const distinct = [...new Set(allDates.map(d => d.iso))];
+                let working = norm;
+                allDates.forEach(d => { working = vaBlank(working, d.start, d.end); });
+
+                const globalDate = distinct.length === 1
+                    ? allDates[0]
+                    : (allDates.length && allDates[0].start < (vaFindMentions(norm, VA_MEMBER_ALIASES, 'name')[0]?.start ?? Infinity) ? allDates[0] : null);
+                if (distinct.length > 1) result.notes.push('Several dates were mentioned — each person uses the date said in their part of the sentence.');
+
+                const members = vaFindMentions(working, VA_MEMBER_ALIASES, 'name');
+                if (members.length === 0) {
+                    result.errors.push('No family member detected. Say a name: Aditya, Neha, Namit, Shanaya or S.K. (Surendra) Katyal.');
+                    return result;
+                }
+
+                // Build member segments
+                const segments = members.map((mm, i) => ({
+                    members: [mm.value],
+                    start: mm.end,
+                    end: i + 1 < members.length ? members[i + 1].start : working.length,
+                    fullStart: mm.start
+                }));
+                // Text before the first member can hold quantities too ("7 hours Aditya ...")
+                const preText = working.slice(0, members[0].start);
+
+                // Merge member-only segments ("Aditya aur Neha dono ke 7 hours")
+                const merged = [];
+                let carry = [];
+                segments.forEach(seg => {
+                    const body = working.slice(seg.start, seg.end);
+                    const hasContent = /\d|\$/.test(body) || vaFindMentions(body, VA_STREAM_ALIASES, 'stream').length > 0;
+                    if (!hasContent) { carry = carry.concat(seg.members); return; }
+                    merged.push({ ...seg, members: carry.concat(seg.members), body });
+                    carry = [];
+                });
+                if (carry.length) {
+                    result.errors.push(`No amount or hours found for ${carry.join(', ')}.`);
+                }
+                if (merged.length && /\d|\$/.test(preText) && merged[0]) {
+                    merged[0].body = preText + ' ' + merged[0].body;
+                }
+
+                merged.forEach(seg => {
+                    // Per-segment date (only when several distinct dates were spoken)
+                    let segDate = globalDate;
+                    if (distinct.length > 1) {
+                        const inSeg = allDates.find(d => d.start >= seg.fullStart && d.start < seg.end);
+                        if (inSeg) segDate = inSeg;
+                    }
+                    const dateISO = segDate ? segDate.iso : defaultISO;
+                    const dateLabel = segDate ? segDate.label : 'currently selected date';
+
+                    const clauses = seg.body.split(/\s*(?:,|;|\band\b|\baur\b|\bor\b|\bplus\b|&|\+|\bthen\b|\bphir\b|\btatha\b)\s*/);
+                    clauses.forEach(clause => {
+                        if (!clause.trim()) return;
+                        let streams = vaFindMentions(clause, VA_STREAM_ALIASES, 'stream');
+                        // "BC Liquor bi-weekly" / "BC Liquor shift" written apart: drop the generic mention
+                        if (streams.some(s => s.value === VA_BCL_GENERIC) && streams.some(s => s.value === VA_BCL_BW || s.value === VA_BCL_SHIFT)) {
+                            streams = streams.filter(s => s.value !== VA_BCL_GENERIC);
+                        }
+                        let clauseForQty = clause;
+                        streams.forEach(s => { clauseForQty = vaBlank(clauseForQty, s.start, s.end); });
+                        const { qty, rate, errors } = vaExtractQuantities(clauseForQty);
+                        errors.forEach(e => result.errors.push(e));
+                        if (!qty.length && !streams.length) return;
+
+                        const pairs = [];
+                        if (streams.length === 0) {
+                            qty.forEach(q => pairs.push({ q, s: null }));
+                        } else if (qty.length === 0) {
+                            streams.forEach(s => result.errors.push(`No amount or hours found for ${seg.members.join(' & ')} • ${s.alias.toUpperCase() === s.alias ? s.alias : s.alias}`));
+                        } else if (streams.length === 1) {
+                            // one stream: prefer hours for hourly streams; extra quantities are leftovers
+                            const s = streams[0];
+                            const hoursQ = qty.find(q => q.kind === 'hours');
+                            const main = hoursQ || qty[0];
+                            pairs.push({ q: main, s });
+                            qty.filter(q => q !== main).forEach(q => {
+                                if (q.kind === 'dollars' && hoursQ) result.notes.push(`Ignored ${formatMoney(q.value)} next to the hours for ${s.alias} — the amount is calculated from hours × rate.`);
+                                else pairs.push({ q, s: null });
+                            });
+                        } else {
+                            const n = Math.min(streams.length, qty.length);
+                            for (let i = 0; i < n; i++) pairs.push({ q: qty[i], s: streams[i] });
+                            streams.slice(n).forEach(s => result.errors.push(`No amount or hours found for ${s.alias}`));
+                            qty.slice(n).forEach(q => pairs.push({ q, s: null }));
+                        }
+
+                        seg.members.forEach(member => {
+                            pairs.forEach(({ q, s }) => {
+                                let kind = q.kind;
+                                let rawStream = s ? s.value : null;
+                                const spoken = `${q.kind === 'dollars' ? '$' : ''}${vaFmtNum(q.value)}${q.kind === 'hours' ? ' hrs' : ''}${s ? ' ' + s.alias : ''}`;
+                                if (!rawStream) {
+                                    rawStream = vaDefaultStream(member, kind === 'bare' ? 'dollars' : kind);
+                                    if (!rawStream && kind === 'hours') {
+                                        result.errors.push(`${member}: hours were given but ${member} has no hourly stream (only BC Liquor shifts use hours × rate) — say a dollar amount instead.`);
+                                        return;
+                                    }
+                                    if (!rawStream) {
+                                        result.errors.push(`${member}: couldn't tell which income stream "${spoken.trim()}" belongs to. Say the stream name (${vaMemberConfig(member).streams.join(', ')}).`);
+                                        return;
+                                    }
+                                }
+                                if (kind === 'bare') {
+                                    if (rawStream === VA_BCL_SHIFT || (rawStream === VA_BCL_GENERIC && q.value <= 24)) {
+                                        kind = 'hours';
+                                        result.notes.push(`"${vaFmtNum(q.value)}" for ${member} BC Liquor was read as hours.`);
+                                    } else {
+                                        kind = 'dollars';
+                                    }
+                                }
+                                const resolved = vaResolveStream(member, rawStream, kind, dateISO);
+                                if (resolved.error) { result.errors.push(resolved.error); return; }
+                                const stream = resolved.stream;
+                                const isHourly = VA_HOURLY_STREAMS.includes(stream);
+                                if (kind === 'hours' && !isHourly) {
+                                    result.errors.push(`${member} • ${stream}: hours were given but this stream has no hourly rate — say a dollar amount instead.`);
+                                    return;
+                                }
+                                if (isHourly && kind === 'dollars') {
+                                    result.errors.push(`${member} • ${stream}: is logged as hours × rate — say hours (e.g. "7 hours BC Liquor").`);
+                                    return;
+                                }
+                                if (!(q.value > 0)) { result.errors.push(`${member} • ${stream}: amount must be more than 0.`); return; }
+                                if (isHourly && q.value > 24) { result.errors.push(`${member} • ${stream}: ${vaFmtNum(q.value)} hours in one day looks wrong — not added.`); return; }
+                                const useRate = isHourly ? (rate && rate > 0 ? rate : (appState.rates[member] || 26)) : undefined;
+                                const item = {
+                                    date: dateISO,
+                                    dateLabel,
+                                    member,
+                                    stream,
+                                    isHourly,
+                                    hours: isHourly ? q.value : undefined,
+                                    rate: useRate,
+                                    rateSource: isHourly ? (rate && rate > 0 ? 'spoken rate' : `${member}'s saved rate`) : '',
+                                    amount: isHourly ? vaRound2(q.value * useRate) : vaRound2(q.value),
+                                    mode: 'replace'
+                                };
+                                const dupIdx = result.items.findIndex(it => it.date === item.date && it.member === item.member && it.stream === item.stream);
+                                if (dupIdx !== -1) {
+                                    result.notes.push(`${member} • ${stream} was said twice — using the later value.`);
+                                    result.items.splice(dupIdx, 1);
+                                }
+                                result.items.push(item);
+                            });
+                        });
+                    });
+                });
+
+                if (!result.items.length && !result.errors.length) {
+                    result.errors.push('Could not find any hours or dollar amounts to log.');
+                }
+                return result;
+            }
+
+            // ---------------- Questions ----------------
+            function vaDetectPeriod(norm) {
+                const todayISO = getTodayISO();
+                const today = parseLocalDate(todayISO);
+                const y = today.getFullYear();
+                const mIdx = today.getMonth();
+                const monthRange = (yy, mm) => {
+                    const start = toLocalISO(new Date(yy, mm, 1));
+                    const end = toLocalISO(new Date(yy, mm + 1, 0));
+                    const label = new Date(yy, mm, 1).toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+                    return { start, end, label };
+                };
+                let m;
+                if (/\b(all time|overall|lifetime|ab tak|abhi tak|till now|so far|sab kuch|everything)\b/.test(norm)) {
+                    const dates = getAllEntriesArray().map(e => e.date).sort();
+                    return { start: dates[0] || todayISO, end: todayISO, label: 'All time' };
+                }
+                if ((m = norm.match(/\b(?:last|pichle|pichhle|past|previous)\s+(\d+)\s+(?:days|din|dino|dinon)\b/))) {
+                    const n = Math.max(1, Number(m[1]));
+                    return { start: shiftDateISO(todayISO, -(n - 1)), end: todayISO, label: `Last ${n} days` };
+                }
+                // Specific dates (Nov 20, 20 Nov, 2026-11-20, today/aaj, kal, parso)
+                const specific = vaExtractDate(norm).filter(d => d.weekday === undefined);
+                if (specific.length) {
+                    const d = specific[0];
+                    return { start: d.iso, end: d.iso, label: formatDisplayDate(d.iso) };
+                }
+                if (/\b(last|previous|pichle|pichhle|pichla|pichhla|pichli)\s+(week|hafte|hafta|haftey|hafte ka|saptah)\b/.test(norm)) {
+                    const wb = getWeekBounds(shiftDateISO(todayISO, -7));
+                    return { start: wb.startISO, end: wb.endISO, label: `Last week (${formatWeekRangeLabel(wb.startISO).replace('Week: ', '').replace(' (Mon–Sun)', '')})` };
+                }
+                if (/\b(this|is|iss|current|es)\s+(week|hafte|hafta|haftey|saptah)\b/.test(norm)) {
+                    const wb = getWeekBounds(todayISO);
+                    return { start: wb.startISO, end: wb.endISO, label: `This week (${formatWeekRangeLabel(wb.startISO).replace('Week: ', '').replace(' (Mon–Sun)', '')})` };
+                }
+                if (/\b(last|previous|pichle|pichhle|pichla|pichhla|pichli)\s+(month|mahine|mahina|maheene|mahene|mahiney|mahinay)\b/.test(norm)) {
+                    const r = monthRange(mIdx === 0 ? y - 1 : y, (mIdx + 11) % 12);
+                    return { ...r, label: `Last month (${r.label})` };
+                }
+                if (/\b(last|previous|pichle|pichhle|pichla|pichhla)\s+(year|saal|sal|varsh)\b/.test(norm)) {
+                    return { start: `${y - 1}-01-01`, end: `${y - 1}-12-31`, label: `Last year (${y - 1})` };
+                }
+                if (/\b(this|is|iss|current|es)\s+(year|saal|sal|varsh)\b/.test(norm)) {
+                    return { start: `${y}-01-01`, end: `${y}-12-31`, label: `This year (${y})` };
+                }
+                const monthNameRe = new RegExp(`\\b(${VA_MONTH_RE})\\b(?:\\s+(\\d{4})\\b)?`);
+                if ((m = norm.match(monthNameRe))) {
+                    const mm = VA_MONTH_LOOKUP[m[1]];
+                    let yy = m[2] ? Number(m[2]) : y;
+                    if (!m[2] && mm > mIdx) yy = y - 1;
+                    return monthRange(yy, mm);
+                }
+                if (/\b(this|is|iss|current|es)\s+(month|mahine|mahina|maheene)\b/.test(norm)) {
+                    const r = monthRange(y, mIdx);
+                    return { ...r, label: `This month (${r.label})` };
+                }
+                const r = monthRange(y, mIdx);
+                return { ...r, label: `This month (${r.label})`, defaulted: true };
+            }
+
+            function vaParseQuestion(rawText) {
+                const norm = vaNormalize(rawText);
+                const period = vaDetectPeriod(norm);
+                const members = [...new Set(vaFindMentions(norm, VA_MEMBER_ALIASES, 'name').map(m => m.value))];
+                const streamMentions = vaFindMentions(norm, VA_STREAM_ALIASES, 'stream');
+                const streams = new Set();
+                streamMentions.forEach(s => {
+                    if (s.value === VA_BCL_GENERIC) { streams.add(VA_BCL_SHIFT); streams.add(VA_BCL_BW); }
+                    else {
+                        streams.add(s.value);
+                        if (VA_STREAM_SYNONYM[s.value]) streams.add(VA_STREAM_SYNONYM[s.value]);
+                    }
+                });
+                const wdMatch = norm.match(new RegExp(`\\b(${VA_WEEKDAY_RE})\\b`));
+                let weekday = wdMatch ? VA_WEEKDAY_LOOKUP[wdMatch[1]] : null;
+                const checkWords = /\b(missing|miss|ho gayi|ho gai|ho gaye|ho gya|ho gyi|hui|hue|complete|completed|done|saari|sari|saare|sare|sab|all|every|payday|paydays|pending|baaki|baki|reh|rahi|entries|entry|logged|bhari|bhar)\b/.test(norm);
+                let weekdayCheck = false;
+                if (weekday !== null && checkWords) weekdayCheck = true;
+                if (weekday === null && members.includes('Namit') && /\b(missing|miss|ho gayi|ho gai|ho gaye|ho gya|ho gyi|complete|completed|payday|paydays|pending|baaki|baki|saari|sari|entries)\b/.test(norm)) {
+                    weekday = 4; weekdayCheck = true;
+                }
+                const checkMembers = weekdayCheck ? (members.length ? members : (weekday === 4 ? ['Namit'] : [])) : members;
+                return { kind: 'question', text: rawText, norm, period, members: weekdayCheck ? checkMembers : members, streams: [...streams], weekday, weekdayCheck };
+            }
+
+            function vaAnswerQuestion(q) {
+                const todayISO = getTodayISO();
+                const { start, end } = q.period;
+                const records = getAllEntriesArray()
+                    .filter(e => e.date >= start && e.date <= end)
+                    .filter(e => !q.members.length || q.members.includes(e.member))
+                    .filter(e => !q.streams.length || q.streams.includes(e.stream))
+                    .filter(e => (Number(e.amount) || 0) > 0 || (Number(e.hours) || 0) > 0)
+                    .sort((a, b) => a.date.localeCompare(b.date) || a.member.localeCompare(b.member));
+                const total = vaRound2(records.reduce((s, e) => s + (Number(e.amount) || 0), 0));
+                const hours = records.reduce((s, e) => s + (Number(e.hours) || 0), 0);
+                const byMember = {};
+                const byStream = {};
+                records.forEach(e => {
+                    byMember[e.member] = vaRound2((byMember[e.member] || 0) + e.amount);
+                    byStream[e.stream] = vaRound2((byStream[e.stream] || 0) + e.amount);
+                });
+                let check = null;
+                if (q.weekdayCheck && q.weekday !== null) {
+                    const days = [];
+                    let d = start;
+                    const stop = end < todayISO ? end : todayISO;
+                    while (d <= stop) {
+                        if (parseLocalDate(d).getDay() === q.weekday) days.push(d);
+                        d = shiftDateISO(d, 1);
+                    }
+                    const who = q.members.length ? q.members : FAMILY_MEMBERS.map(m => m.name);
+                    const rows = days.map(day => {
+                        const dayRecs = getAllEntriesArray().filter(e => e.date === day && who.includes(e.member) && (!q.streams.length || q.streams.includes(e.stream)));
+                        const amt = vaRound2(dayRecs.reduce((s, e) => s + (Number(e.amount) || 0), 0));
+                        const status = amt > 0 ? 'logged' : (dayRecs.length ? 'zero' : 'missing');
+                        return { day, amt, status };
+                    });
+                    check = { weekday: q.weekday, who, rows, missing: rows.filter(r => r.status !== 'logged') };
+                }
+                return { records, total, hours, byMember, byStream, check };
+            }
+
+            // ---------------- Rendering ----------------
+            function vaMemberBadge(member) {
+                const cfg = vaMemberConfig(member);
+                const short = cfg ? cfg.shortName : member;
+                return `<span class="px-2 py-0.5 rounded-md ${cfg ? cfg.badgeBg : 'bg-slate-600'} text-white text-[10px] font-extrabold whitespace-nowrap">${escapeHTML(short)}</span>`;
+            }
+
+            function vaExistingInfo(it) {
+                const ex = getCanonicalEntry(it.date, it.member, it.stream);
+                const has = Boolean(ex) && ((Number(ex.amount) || 0) > 0 || (Number(ex.hours) || 0) > 0);
+                return { ex, has };
+            }
+
+            function vaFinalValues(it) {
+                const { ex, has } = vaExistingInfo(it);
+                if (it.mode === 'add' && has) {
+                    if (it.isHourly) {
+                        const hrs = (Number(ex.hours) || 0) + it.hours;
+                        return { hours: hrs, rate: it.rate, amount: vaRound2(hrs * it.rate), math: `(${vaFmtNum(ex.hours || 0)} existing + ${vaFmtNum(it.hours)} new) hrs × ${formatMoney(it.rate)}/hr = ${formatMoney(hrs * it.rate)}` };
+                    }
+                    const amt = vaRound2((Number(ex.amount) || 0) + it.amount);
+                    return { amount: amt, math: `${formatMoney(ex.amount)} existing + ${formatMoney(it.amount)} new = ${formatMoney(amt)}` };
+                }
+                if (it.isHourly) {
+                    return { hours: it.hours, rate: it.rate, amount: it.amount, math: `${vaFmtNum(it.hours)} hrs × ${formatMoney(it.rate)}/hr = ${formatMoney(it.amount)}` };
+                }
+                return { amount: it.amount, math: `Direct amount = ${formatMoney(it.amount)}` };
+            }
+
+            function vaScheduleHint(it) {
+                if (it.stream === 'Weekly Income' && !isThursday(it.date)) return 'Not a Thursday (Namit\'s usual payday) — it will still be saved on this date.';
+                if ((it.stream === 'Monthly Salary' || it.stream === 'Monthly Income' || it.stream === 'Child Care Benefit') && !is30thPayday(it.date)) return 'Not the 30th (usual monthly payday) — it will still be saved on this date.';
+                if (it.stream === VA_BCL_BW && !isBiWeeklyBclPayday(it.date)) return 'Not a BC Liquor bi-weekly payday — it will still be saved on this date.';
+                return '';
+            }
+
+            function vaRenderPreview() {
+                const out = document.getElementById('vaOutput');
+                const p = vaState.pending;
+                if (!out || !p) return;
+                const dates = [...new Set(p.items.map(it => it.date))].sort();
+                const existingWarnings = [];
+                let newTotal = 0;
+                let netChange = 0;
+                const itemsHTML = dates.map(dateISO => {
+                    const dayItems = p.items.map((it, idx) => ({ it, idx })).filter(x => x.it.date === dateISO);
+                    const rows = dayItems.map(({ it, idx }) => {
+                        const { ex, has } = vaExistingInfo(it);
+                        const fin = vaFinalValues(it);
+                        newTotal += fin.amount;
+                        netChange += fin.amount - (has ? (Number(ex.amount) || 0) : 0);
+                        if (has) {
+                            const exText = typeof ex.hours === 'number' && ex.hours > 0
+                                ? `${formatMoney(ex.amount)} (${vaFmtNum(ex.hours)} hrs × ${formatMoney(ex.rate)}/hr)`
+                                : formatMoney(ex.amount);
+                            existingWarnings.push(`
+                                <div class="rounded-xl border border-amber-300 bg-amber-50 p-3 space-y-2">
+                                    <p class="text-xs font-extrabold text-amber-950">⚠️ ${escapeHTML(it.member)} • ${escapeHTML(it.stream)} already has an entry on ${escapeHTML(formatDisplayDate(it.date))}</p>
+                                    <p class="text-xs text-amber-900">Existing: <b>${exText}</b> → ${it.mode === 'add' ? 'After adding' : 'Will be replaced with'}: <b>${formatMoney(fin.amount)}</b></p>
+                                    <div class="grid grid-cols-2 bg-white/70 p-1 rounded-lg gap-1 w-full sm:w-80">
+                                        <button type="button" data-action="va-set-mode" data-idx="${idx}" data-mode="replace"
+                                            class="px-2 py-1.5 rounded-md text-[11px] ${it.mode !== 'add' ? 'font-extrabold bg-amber-500 text-slate-950 shadow-sm' : 'font-bold text-amber-900'}">Replace existing</button>
+                                        <button type="button" data-action="va-set-mode" data-idx="${idx}" data-mode="add"
+                                            class="px-2 py-1.5 rounded-md text-[11px] ${it.mode === 'add' ? 'font-extrabold bg-amber-500 text-slate-950 shadow-sm' : 'font-bold text-amber-900'}">Add on top</button>
+                                    </div>
+                                </div>`);
+                        }
+                        const hint = vaScheduleHint(it);
+                        return `
+                            <div class="flex items-start justify-between gap-3 py-2.5 px-3 rounded-xl bg-white border ${has ? 'border-amber-300' : 'border-slate-200'}" data-va-item="${idx}">
+                                <div class="min-w-0 space-y-1">
+                                    <div class="flex items-center gap-1.5 flex-wrap">${vaMemberBadge(it.member)}<span class="text-xs font-extrabold text-slate-900">${escapeHTML(it.stream)}</span>${has ? '<span class="px-1.5 py-0.5 rounded-md bg-amber-100 text-amber-900 text-[10px] font-extrabold">Overwrite?</span>' : ''}</div>
+                                    <p class="text-xs font-semibold text-slate-700 va-math">${escapeHTML(fin.math)}</p>
+                                    ${it.isHourly ? `<p class="text-[10px] text-slate-500">Rate: ${escapeHTML(it.rateSource)}</p>` : ''}
+                                    ${hint ? `<p class="text-[10px] font-semibold text-sky-700">ℹ️ ${escapeHTML(hint)}</p>` : ''}
+                                </div>
+                                <span class="text-sm font-extrabold text-emerald-700 shrink-0">${formatMoney(fin.amount)}</span>
+                            </div>`;
+                    }).join('');
+                    const lbl = dayItems[0].it.dateLabel;
+                    return `
+                        <div class="space-y-2">
+                            <div class="flex items-center justify-between gap-2 flex-wrap">
+                                <span class="text-xs font-extrabold text-slate-900">📅 ${escapeHTML(formatDisplayDate(dateISO))}</span>
+                                <span class="text-[10px] font-bold text-slate-500">from ${escapeHTML(lbl)}</span>
+                            </div>
+                            ${rows}
+                        </div>`;
+                }).join('');
+
+                const errorsHTML = p.errors.length ? `
+                    <div class="rounded-xl border border-rose-300 bg-rose-50 p-3 space-y-1">
+                        <p class="text-xs font-extrabold text-rose-900">✋ Not understood — these parts will NOT be saved:</p>
+                        ${p.errors.map(e => `<p class="text-xs text-rose-800">• ${escapeHTML(e)}</p>`).join('')}
+                    </div>` : '';
+                const notesHTML = p.notes.length ? `<div class="space-y-0.5">${p.notes.map(n => `<p class="text-[11px] text-slate-500">ℹ️ ${escapeHTML(n)}</p>`).join('')}</div>` : '';
+                const canSave = p.items.length > 0;
+
+                out.innerHTML = `
+                    <div id="vaPreviewCard" class="rounded-2xl border-2 border-emerald-500 bg-emerald-50/50 p-4 space-y-3">
+                        <div class="flex items-start gap-2.5">
+                            <span class="w-8 h-8 rounded-xl bg-emerald-600 text-white font-extrabold text-sm flex items-center justify-center shrink-0">✓</span>
+                            <div class="min-w-0">
+                                <h3 class="text-sm font-extrabold text-slate-900">Confirm Calculation Before Saving</h3>
+                                <p class="text-[11px] text-slate-500 break-words">You said: “${escapeHTML(p.text)}”</p>
+                            </div>
+                        </div>
+                        ${existingWarnings.join('')}
+                        ${canSave ? itemsHTML : ''}
+                        ${errorsHTML}
+                        ${notesHTML}
+                        ${canSave ? `
+                        <div class="rounded-xl bg-slate-900 text-white p-3.5 space-y-1">
+                            <div class="flex items-center justify-between gap-2">
+                                <span class="text-[11px] font-extrabold uppercase tracking-wider text-emerald-300">Grand Total of New Entries</span>
+                                <span id="vaPreviewGrandTotal" class="text-xl font-extrabold text-emerald-400">${formatMoney(newTotal)}</span>
+                            </div>
+                            <div class="flex items-center justify-between gap-2 text-[11px] text-slate-300">
+                                <span>${p.items.length} entr${p.items.length === 1 ? 'y' : 'ies'} • change to saved totals</span>
+                                <span id="vaPreviewNetChange" class="font-extrabold">${netChange >= 0 ? '+' : '−'}${formatMoney(Math.abs(netChange))}</span>
+                            </div>
+                        </div>` : ''}
+                        <div class="flex flex-wrap gap-2">
+                            ${canSave ? `<button type="button" id="vaConfirmBtn" data-action="va-confirm"
+                                class="flex-1 sm:flex-none px-5 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-extrabold shadow-sm">Confirm &amp; Save Now</button>` : ''}
+                            <button type="button" id="vaCancelBtn" data-action="va-cancel"
+                                class="flex-1 sm:flex-none px-5 py-3 rounded-xl bg-white hover:bg-slate-100 border border-slate-300 text-slate-800 text-sm font-extrabold">${canSave ? 'Cancel' : 'Close'}</button>
+                        </div>
+                        <p class="text-[10px] text-slate-500">Nothing has been saved yet. Only “Confirm &amp; Save Now” writes to your data.</p>
+                    </div>`;
+            }
+
+            function vaRenderAnswer(q, a) {
+                const out = document.getElementById('vaOutput');
+                if (!out) return;
+                const filterParts = [];
+                filterParts.push(q.members.length ? q.members.join(', ') : 'All 5 members');
+                filterParts.push(q.streams.length ? q.streams.join(', ') : 'All streams');
+                const memberRows = Object.keys(a.byMember).length > 1 ? `
+                    <div class="space-y-1">
+                        <p class="text-[11px] font-extrabold uppercase tracking-wider text-slate-500">By member</p>
+                        ${Object.entries(a.byMember).sort((x, y) => y[1] - x[1]).map(([m, v]) => `<div class="flex items-center justify-between text-xs"><span>${vaMemberBadge(m)}</span><span class="font-extrabold text-slate-900">${formatMoney(v)}</span></div>`).join('')}
+                    </div>` : '';
+                const streamRows = Object.keys(a.byStream).length > 1 ? `
+                    <div class="space-y-1">
+                        <p class="text-[11px] font-extrabold uppercase tracking-wider text-slate-500">By stream</p>
+                        ${Object.entries(a.byStream).sort((x, y) => y[1] - x[1]).map(([s, v]) => `<div class="flex items-center justify-between text-xs"><span class="font-semibold text-slate-700">${escapeHTML(s)}</span><span class="font-extrabold text-slate-900">${formatMoney(v)}</span></div>`).join('')}
+                    </div>` : '';
+                let checkHTML = '';
+                if (a.check) {
+                    const wdName = VA_WEEKDAY_LABEL[a.check.weekday];
+                    const allDone = a.check.rows.length > 0 && a.check.missing.length === 0;
+                    const whoLabel = a.check.who.length === FAMILY_MEMBERS.length ? 'anyone' : a.check.who.join(', ');
+                    checkHTML = `
+                        <div id="vaWeekdayCheck" class="rounded-xl border ${allDone ? 'border-emerald-300 bg-emerald-50' : 'border-rose-300 bg-rose-50'} p-3 space-y-2">
+                            <p class="text-xs font-extrabold ${allDone ? 'text-emerald-900' : 'text-rose-900'}">
+                                ${a.check.rows.length === 0 ? `No ${wdName}s in this period yet.` : allDone
+                                    ? `✅ Yes — all ${a.check.rows.length} ${wdName}s are logged for ${escapeHTML(whoLabel)}.`
+                                    : `⚠️ ${a.check.missing.length} of ${a.check.rows.length} ${wdName}s missing for ${escapeHTML(whoLabel)}: ${a.check.missing.map(r => escapeHTML(parseLocalDate(r.day).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }))).join(', ')}`}
+                            </p>
+                            <div class="space-y-1">
+                                ${a.check.rows.map(r => `
+                                    <div class="flex items-center justify-between gap-2 text-xs py-1 px-2 rounded-lg bg-white/80">
+                                        <span class="font-semibold text-slate-800">${escapeHTML(formatDisplayDate(r.day))}</span>
+                                        ${r.status === 'logged'
+                                            ? `<span class="font-extrabold text-emerald-700">✓ ${formatMoney(r.amt)}</span>`
+                                            : `<span class="font-extrabold text-rose-700">✗ ${r.status === 'zero' ? '$0 saved' : (r.day === getTodayISO() ? 'Not logged yet (today)' : 'Missing')}</span>`}
+                                    </div>`).join('')}
+                            </div>
+                        </div>`;
+                }
+                const recordsHTML = a.records.length ? `
+                    <div class="space-y-1">
+                        <p class="text-[11px] font-extrabold uppercase tracking-wider text-slate-500">Matching records (${a.records.length})</p>
+                        <div class="max-h-72 overflow-y-auto space-y-1 pr-1">
+                            ${a.records.map(e => `
+                                <div class="flex items-center justify-between gap-2 py-1.5 px-2.5 rounded-lg bg-slate-50 border border-slate-100">
+                                    <div class="min-w-0 flex items-center gap-1.5 flex-wrap">
+                                        <span class="text-[11px] font-extrabold text-slate-500 whitespace-nowrap">${escapeHTML(parseLocalDate(e.date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }))}</span>
+                                        ${vaMemberBadge(e.member)}
+                                        <span class="text-[11px] font-semibold text-slate-700">${escapeHTML(e.stream)}${typeof e.hours === 'number' && e.hours > 0 ? ` • ${vaFmtNum(e.hours)}h` : ''}</span>
+                                    </div>
+                                    <span class="text-xs font-extrabold text-slate-900 shrink-0">${formatMoney(e.amount)}</span>
+                                </div>`).join('')}
+                        </div>
+                    </div>` : `<p class="text-xs font-semibold text-slate-500">No records found for this period and filter.</p>`;
+
+                out.innerHTML = `
+                    <div id="vaAnswerCard" class="rounded-2xl border-2 border-indigo-400 bg-indigo-50/40 p-4 space-y-3">
+                        <div class="flex items-start justify-between gap-2">
+                            <div class="min-w-0">
+                                <h3 class="text-sm font-extrabold text-slate-900">💬 Assistant Answer</h3>
+                                <p class="text-[11px] text-slate-500 break-words">You asked: “${escapeHTML(q.text)}”</p>
+                            </div>
+                            <button type="button" data-action="va-cancel" class="px-2.5 py-1 rounded-lg bg-white border border-slate-200 text-[11px] font-extrabold text-slate-600">Close</button>
+                        </div>
+                        <div class="flex flex-wrap gap-1.5">
+                            <span class="px-2 py-0.5 rounded-full bg-white border border-slate-200 text-[10px] font-extrabold text-slate-700">📅 ${escapeHTML(q.period.label)}${q.period.defaulted ? ' (default)' : ''}</span>
+                            <span class="px-2 py-0.5 rounded-full bg-white border border-slate-200 text-[10px] font-extrabold text-slate-700">${escapeHTML(filterParts.join(' • '))}</span>
+                        </div>
+                        <div class="grid grid-cols-2 gap-2">
+                            <div class="rounded-xl bg-slate-900 text-white p-3">
+                                <span class="text-[10px] font-extrabold uppercase tracking-wider text-emerald-300 block">Total</span>
+                                <span id="vaAnswerTotal" class="text-xl font-extrabold text-emerald-400">${formatMoney(a.total)}</span>
+                            </div>
+                            <div class="rounded-xl bg-white border border-slate-200 p-3">
+                                <span class="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 block">${a.hours > 0 ? 'Total hours' : 'Records'}</span>
+                                <span id="vaAnswerHours" class="text-xl font-extrabold text-slate-900">${a.hours > 0 ? `${vaFmtNum(a.hours)} hrs` : a.records.length}</span>
+                            </div>
+                        </div>
+                        ${checkHTML}
+                        ${memberRows}
+                        ${streamRows}
+                        ${recordsHTML}
+                    </div>`;
+            }
+
+            function vaShowMessage(html, tone) {
+                const out = document.getElementById('vaOutput');
+                if (!out) return;
+                const cls = tone === 'ok'
+                    ? 'border-emerald-300 bg-emerald-50 text-emerald-900'
+                    : tone === 'warn' ? 'border-amber-300 bg-amber-50 text-amber-900' : 'border-slate-200 bg-slate-50 text-slate-700';
+                out.innerHTML = `<div id="vaMessage" class="rounded-xl border ${cls} p-3 text-xs font-semibold space-y-2">${html}</div>`;
+            }
+
+            function vaRun() {
+                const input = document.getElementById('vaInput');
+                const text = (input?.value || '').trim();
+                if (!text) {
+                    vaShowMessage('Type or speak a command first — e.g. “Aaj Neha ke 7 hours BC Liquor” or “Is mahine Uber se kitna bana?”', 'warn');
+                    return;
+                }
+                vaStopListening();
+                const norm = vaNormalize(text);
+                if (vaIsQuestion(norm)) {
+                    vaState.pending = null;
+                    const q = vaParseQuestion(text);
+                    vaRenderAnswer(q, vaAnswerQuestion(q));
+                } else {
+                    vaState.pending = vaParseLog(text);
+                    vaRenderPreview();
+                }
+                document.getElementById('vaOutput')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }
+
+            function vaConfirmSave() {
+                const p = vaState.pending;
+                if (!p || !p.items.length) return;
+                let total = 0;
+                const savedDates = new Set();
+                p.items.forEach(it => {
+                    const { ex } = vaExistingInfo(it);
+                    const fin = vaFinalValues(it);
+                    if (it.isHourly) appState.rates[it.member] = it.rate;
+                    upsertCanonicalLog({
+                        date: it.date,
+                        member: it.member,
+                        stream: it.stream,
+                        amount: fin.amount,
+                        hours: fin.hours,
+                        rate: fin.rate,
+                        isHourly: it.isHourly,
+                        note: ex ? undefined : 'Added via Voice & Smart Assistant'
+                    });
+                    total += fin.amount;
+                    savedDates.add(it.date);
+                });
+                saveToStorage(true);
+                prefillInputsForDate(appState.selectedDate);
+                renderAll();
+                const count = p.items.length;
+                vaState.pending = null;
+                const dateList = [...savedDates].sort();
+                const jumpBtns = dateList.filter(d => d !== appState.selectedDate).map(d =>
+                    `<button type="button" data-action="set-date" data-date="${d}" class="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-extrabold">View ${escapeHTML(parseLocalDate(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }))} →</button>`
+                ).join(' ');
+                vaShowMessage(`<p class="font-extrabold">✅ Saved ${count} entr${count === 1 ? 'y' : 'ies'} • ${formatMoney(total)} on ${dateList.map(d => escapeHTML(formatDisplayDate(d))).join(', ')}</p>${jumpBtns ? `<div class="flex flex-wrap gap-1.5">${jumpBtns}</div>` : ''}`, 'ok');
+                const input = document.getElementById('vaInput');
+                if (input) input.value = '';
+                showToast(`Assistant saved ${count} entr${count === 1 ? 'y' : 'ies'} • ${formatMoney(total)} ✓`);
+            }
+
+            // ---------------- Speech (Web Speech API) ----------------
+            function vaSetMicStatus(msg, tone) {
+                const el = document.getElementById('vaMicStatus');
+                if (!el) return;
+                if (!msg) { el.classList.add('hidden'); el.textContent = ''; return; }
+                el.className = `text-xs font-semibold rounded-xl px-3 py-2 ${tone === 'error' ? 'bg-rose-50 text-rose-800 border border-rose-200' : tone === 'live' ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 'bg-slate-50 text-slate-700 border border-slate-200'}`;
+                el.textContent = msg;
+            }
+
+            function vaUpdateMicBtn() {
+                const btn = document.getElementById('vaMicBtn');
+                if (!btn) return;
+                btn.textContent = vaState.listening ? '⏹ Stop' : '🎤 Speak';
+                btn.className = vaState.listening
+                    ? 'px-4 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs sm:text-sm font-extrabold shadow-sm transition whitespace-nowrap animate-pulse'
+                    : 'px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs sm:text-sm font-extrabold shadow-sm transition whitespace-nowrap';
+            }
+
+            function vaStopListening() {
+                if (vaState.recognition && vaState.listening) {
+                    try { vaState.recognition.stop(); } catch (e) {}
+                }
+            }
+
+            function vaToggleMic() {
+                const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+                if (!SR) {
+                    vaSetMicStatus('Voice input isn\'t supported in this browser. On iPhone open the app in Safari, on Android use Chrome — or tap the 🎤 dictation key on your keyboard and then tap Check / Ask.', 'error');
+                    return;
+                }
+                if (vaState.listening) { vaStopListening(); return; }
+                const input = document.getElementById('vaInput');
+                const rec = new SR();
+                rec.lang = document.getElementById('vaLangSelect')?.value || 'en-IN';
+                rec.interimResults = true;
+                rec.continuous = false;
+                rec.maxAlternatives = 1;
+                let finalText = '';
+                rec.onstart = () => {
+                    vaState.listening = true;
+                    vaUpdateMicBtn();
+                    vaSetMicStatus('Listening… speak now. Tap Stop when done, then Check / Ask.', 'live');
+                };
+                rec.onresult = (ev) => {
+                    let interim = '';
+                    for (let i = ev.resultIndex; i < ev.results.length; i++) {
+                        const r = ev.results[i];
+                        if (r.isFinal) finalText += r[0].transcript + ' ';
+                        else interim += r[0].transcript;
+                    }
+                    if (input) input.value = (finalText + interim).replace(/\s+/g, ' ').trim();
+                };
+                rec.onerror = (ev) => {
+                    const map = {
+                        'not-allowed': 'Microphone permission was blocked. Allow mic access for this site in your browser settings, or use keyboard dictation.',
+                        'service-not-allowed': 'Speech recognition isn\'t allowed here. Use your keyboard\'s 🎤 dictation key instead.',
+                        'no-speech': 'Didn\'t hear anything — tap Speak and try again.',
+                        'audio-capture': 'No microphone found.',
+                        'network': 'Speech recognition needs an internet connection in this browser. You can still type.'
+                    };
+                    vaSetMicStatus(map[ev.error] || `Voice input error: ${ev.error}`, 'error');
+                };
+                rec.onend = () => {
+                    vaState.listening = false;
+                    vaUpdateMicBtn();
+                    const el = document.getElementById('vaMicStatus');
+                    if (el && el.textContent.startsWith('Listening')) {
+                        vaSetMicStatus(input && input.value.trim() ? 'Got it — check the text, then tap Check / Ask.' : '', 'info');
+                    }
+                };
+                vaState.recognition = rec;
+                try { rec.start(); } catch (err) { vaSetMicStatus('Could not start the microphone. Try again.', 'error'); }
+            }
+
+            document.addEventListener('click', (e) => {
+                const btn = e.target.closest('[data-action]');
+                if (!btn) return;
+                const action = btn.dataset.action;
+                if (!action || action.indexOf('va-') !== 0) return;
+                if (action === 'va-run') {
+                    vaRun();
+                } else if (action === 'va-mic') {
+                    vaToggleMic();
+                } else if (action === 'va-chip') {
+                    const input = document.getElementById('vaInput');
+                    if (input) { input.value = btn.dataset.text || ''; input.focus(); }
+                    vaSetMicStatus('Example filled in — tap Check / Ask.', 'info');
+                } else if (action === 'va-clear') {
+                    vaStopListening();
+                    vaState.pending = null;
+                    const input = document.getElementById('vaInput');
+                    if (input) input.value = '';
+                    const out = document.getElementById('vaOutput');
+                    if (out) out.innerHTML = '';
+                    vaSetMicStatus('');
+                } else if (action === 'va-cancel') {
+                    const hadPending = Boolean(vaState.pending && vaState.pending.items.length);
+                    vaState.pending = null;
+                    if (hadPending) vaShowMessage('Cancelled — nothing was saved.', 'info');
+                    else { const out = document.getElementById('vaOutput'); if (out) out.innerHTML = ''; }
+                } else if (action === 'va-confirm') {
+                    vaConfirmSave();
+                } else if (action === 'va-set-mode') {
+                    const p = vaState.pending;
+                    const idx = Number(btn.dataset.idx);
+                    if (p && p.items[idx]) {
+                        p.items[idx].mode = btn.dataset.mode === 'add' ? 'add' : 'replace';
+                        vaRenderPreview();
+                    }
+                }
+            });
+
+            document.addEventListener('keydown', (e) => {
+                if (e.target && e.target.id === 'vaInput' && e.key === 'Enter' && !e.shiftKey && !e.isComposing) {
+                    e.preventDefault();
+                    vaRun();
+                }
+            });
+
+            // Read-only hooks for testing the parser (no writes)
+            window.FamilyAssistant = {
+                parseLog: (t) => vaParseLog(t),
+                parseQuestion: (t) => vaParseQuestion(t),
+                answer: (t) => { const q = vaParseQuestion(t); return { q, a: vaAnswerQuestion(q) }; },
+                isQuestion: (t) => vaIsQuestion(vaNormalize(t)),
+                normalize: (t) => vaNormalize(t)
+            };
+
 
             // -----------------------------------------------------------------
             // INITIALIZE
